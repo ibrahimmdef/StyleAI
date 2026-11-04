@@ -7,7 +7,7 @@ const TYPES = {
   Outerwear: ["Jacket", "Coat", "Blazer", "Vest"],
   Bottoms: ["Jeans", "Trousers", "Shorts", "Skirt"],
   Shoes: ["Sneakers", "Boots", "Loafers", "Sandals"],
-  Accessories: ["Bag", "Belt", "Hat", "Scarf"],
+  Accessories: ["Bag", "Belt", "Hat", "Scarf", "Watches", "Jewelry"],
 };
 
 const COLORS = {
@@ -56,20 +56,57 @@ export default function AddItem({ onAdd }) {
     setPreview(URL.createObjectURL(f));
   }
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
-    if (!name.trim()) return setError("Enter an item name.");
-    // image: File obyekti, backend-ə FormData ilə göndər
-    onAdd({
-      name: name.trim(),
-      category,
-      type,
-      color,
-      seasons,
-      styles,
-      image: file,
-    });
-    navigate("/wardrobe");
+    setError("");
+
+    if (!file) {
+      setError("Add an item photo.");
+      return;
+    }
+
+    if (!name.trim()) {
+      setError("Enter an item name.");
+      return;
+    }
+
+    if (seasons.length === 0) {
+      setError("Select at least one season.");
+      return;
+    }
+
+    if (styles.length === 0) {
+      setError("Select at least one style.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("name", name.trim());
+    formData.append("category", category);
+    formData.append("type", type);
+    formData.append("color", color);
+    formData.append("seasons", JSON.stringify(seasons));
+    formData.append("styles", JSON.stringify(styles));
+
+    if (file) {
+      formData.append("image", file);
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/Items", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Item could not be saved.");
+      }
+
+      navigate("/wardrobe");
+    } catch (err) {
+      setError(err.message || "An error occurred while saving.");
+    }
   }
 
   const chip = (active) =>

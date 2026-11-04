@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Route, Routes, Outlet, Link } from "react-router-dom";
 import { ArrowLeft, Construction } from "lucide-react";
 import Sidebar, { MobileNavigation } from "./components/Sidebar";
@@ -7,23 +7,12 @@ import Wardrobe from "./pages/Wardrobe";
 import AddItem from "./pages/AddItem";
 
 export default function App() {
-  const [clothes, setClothes] = useState([]);
-
-  const addItem = (item) =>
-    setClothes((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        ...item,
-        image: item.image ? URL.createObjectURL(item.image) : "",
-      },
-    ]);
   return (
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<Home />} />
         <Route path="wardrobe" element={<Wardrobe />} />
-        <Route path="/wardrobe/new" element={<AddItem onAdd={addItem} />} />
+        <Route path="/wardrobe/new" element={<AddItem />} />
         <Route
           path="outfits"
           element={<PlaceholderPage title="My Outfits" />}

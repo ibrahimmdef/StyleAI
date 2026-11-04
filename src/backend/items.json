@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1793775109596,
+    "name": "Nike Blazer Mid 77",
+    "category": "Shoes",
+    "type": "Sneakers",
+    "color": "White",
+    "seasons": ["Spring", "Summer", "Autumn"],
+    "styles": ["Minimal", "Sporty"],
+    "image": "http://localhost:5000/uploads/1793775109583.webp"
+  },
+  {
+    "id": 1793775727584,
+    "name": "Ebel Watches",
+    "category": "Accessories",
+    "type": "Watches",
+    "color": "White",
+    "seasons": ["Spring", "Summer", "Autumn", "Winter"],
+    "styles": ["Smart casual", "Casual"],
+    "image": "http://localhost:5000/uploads/1793775727583.webp"
+  },
+  {
+    "id": 1793776007265,
+    "name": "Black Coat",
+    "category": "Outerwear",
+    "type": "Coat",
+    "color": "Black",
+    "seasons": ["Winter", "Autumn"],
+    "styles": ["Casual", "Smart casual"],
+    "image": "http://localhost:5000/uploads/1793776007264.webp"
+  },
+  {
+    "id": 1793776409456,
+    "name": "Gray Trousers",
+    "category": "Bottoms",
+    "type": "Trousers",
+    "color": "Gray",
+    "seasons": ["Spring", "Autumn"],
+    "styles": ["Casual", "Smart casual"],
+    "image": "http://localhost:5000/uploads/1793776409455.webp"
+  },
+  {
+    "id": 1793776475673,
+    "name": "Leather Jacked",
+    "category": "Outerwear",
+    "type": "Jacket",
+    "color": "Black",
+    "seasons": ["Autumn", "Spring"],
+    "styles": ["Minimal", "Smart casual"],
+    "image": "http://localhost:5000/uploads/1793776475672.webp"
+  }
+]

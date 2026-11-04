@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Search } from "lucide-react";
 
@@ -7,8 +7,17 @@ import WardrobeFilters from "../components/WardrobeFilters";
 import ClothingCard from "../components/ClothingCard";
 import { Button } from "../components/Buttons";
 
-export default function Wardrobe({ clothes = [] }) {
+export default function Wardrobe() {
   const navigate = useNavigate();
+
+  const [clothes, setClothes] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/Items")
+      .then((res) => res.json())
+      .then((data) => setClothes(data));
+  }, []);
+
   const [activeCategory, setActiveCategory] = useState("All");
   const [season, setSeason] = useState("All");
   const [sortBy, setSortBy] = useState("Newest");
