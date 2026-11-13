@@ -1,5 +1,6 @@
 import { Router } from "express";
 import fs from "fs";
+import path from "path";
 import { checkItem } from "../shared/catalog.js";
 
 const router = Router();
@@ -12,6 +13,16 @@ function readItems() {
 
 function saveItems(items) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(items, null, 2) + "\n");
+}
+
+// Removes a photo from uploads. basename keeps only the file name,
+// so a url like "../server.js" can't delete anything outside uploads.
+function deletePhoto(imageUrl) {
+  if (!imageUrl) return;
+  const file = path.join("uploads", path.basename(imageUrl));
+  fs.rm(file, { force: true }, (err) => {
+    if (err) console.error("PHOTO DELETE ERROR:", err);
+  });
 }
 
 router.get("/Items", (req, res) => {
@@ -40,6 +51,11 @@ router.put("/Items/:id", (req, res) => {
     return res.status(404).json({ message: "Item not found" });
   }
 
+  // New photo picked: the old one isn't needed anymore
+  if (items[index].image !== image) {
+    deletePhoto(items[index].image);
+  }
+
   // Keep the id, replace everything else
   items[index] = {
     id: items[index].id,
@@ -58,11 +74,13 @@ router.put("/Items/:id", (req, res) => {
 
 router.delete("/Items/:id", (req, res) => {
   const items = readItems();
-  const rest = items.filter((item) => item.id !== Number(req.params.id));
-  if (rest.length === items.length) {
+  const item = items.find((item) => item.id === Number(req.params.id));
+  if (!item) {
     return res.status(404).json({ message: "Item not found" });
   }
-  saveItems(rest);
+
+  saveItems(items.filter((other) => other.id !== item.id));
+  deletePhoto(item.image);
   res.json({ message: "Item deleted" });
 });
 

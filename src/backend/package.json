@@ -12,6 +12,10 @@
   "author": "",
   "license": "ISC",
   "type": "module",
+  "nodemonConfig": {
+    "watch": [".", "../shared"],
+    "ignore": ["items.json", "uploads/*"]
+  },
   "dependencies": {
     "@imgly/background-removal-node": "^1.4.5",
     "cors": "^2.8.6",
