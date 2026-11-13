@@ -11,6 +11,7 @@ import {
   OPTIONAL_SLOTS,
   SLOTS,
   STORAGE,
+  defaultOutfitName,
   getSlot,
   outfitKey,
   readFavorites,
@@ -128,7 +129,12 @@ export default function Home() {
   function addToSaved() {
     const next = [
       ...saved,
-      { key, slots: outfit, savedAt: new Date().toISOString() },
+      {
+        key,
+        name: defaultOutfitName(),
+        slots: outfit,
+        savedAt: new Date().toISOString(),
+      },
     ];
     if (!writeStorage(STORAGE.saved, next)) return false;
     setSaved(next);

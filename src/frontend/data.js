@@ -1,4 +1,5 @@
 import { CATEGORIES } from "../shared/catalog.js";
+import { getSeason } from "../shared/rules.js";
 
 // Places in an outfit. The order also matters for outfitKey.
 export const SLOTS = [
@@ -45,6 +46,12 @@ export function readSaved() {
   const value = readStorage(STORAGE.saved, []);
   if (!Array.isArray(value)) return [];
   return value.filter((entry) => typeof entry?.key === "string" && entry.slots);
+}
+
+// A name to start with, like "Friday autumn look". It can be renamed later.
+export function defaultOutfitName(date = new Date()) {
+  const day = date.toLocaleDateString("en-US", { weekday: "long" });
+  return `${day} ${getSeason(date).toLowerCase()} look`;
 }
 
 // Favorites are a list of outfit keys

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { EllipsisVertical, Heart, Shirt, Trash2 } from "lucide-react";
+import { EllipsisVertical, Heart, Pencil, Shirt, Trash2 } from "lucide-react";
 import {
   SLOTS,
   STORAGE,
@@ -58,6 +58,14 @@ export default function Outfits() {
     setFavorites(nextFavorites);
   }
 
+  function renameOutfit(key, name) {
+    const next = saved.map((entry) =>
+      entry.key === key ? { ...entry, name } : entry,
+    );
+    writeStorage(STORAGE.saved, next);
+    setSaved(next);
+  }
+
   // Make it today's outfit and go to Home
   function wear(entry) {
     writeStorage(STORAGE.outfit, entry.slots);
@@ -112,6 +120,7 @@ export default function Outfits() {
               isFavorite={favorites.includes(entry.key)}
               onFavorite={() => toggleFavorite(entry.key)}
               onWear={() => wear(entry)}
+              onRename={(name) => renameOutfit(entry.key, name)}
               onDelete={() => deleteOutfit(entry.key)}
             />
           ))}
@@ -121,16 +130,27 @@ export default function Outfits() {
   );
 }
 
-// One saved outfit: a small picture of its pieces, the date and a menu
+// One saved outfit: a small picture of its pieces, its name and a menu
 function OutfitCard({
   entry,
   wardrobe,
   isFavorite,
   onFavorite,
   onWear,
+  onRename,
   onDelete,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [renaming, setRenaming] = useState(false);
+
+  // Older outfits were saved before names existed
+  const name = entry.name || "Untitled outfit";
+
+  function finishRename(value) {
+    setRenaming(false);
+    // Empty name? Keep the old one.
+    if (value.trim() && value.trim() !== name) onRename(value.trim());
+  }
 
   // Find each piece in the wardrobe. Deleted pieces just drop out.
   const pieces = SLOTS.map((slot) =>
@@ -167,13 +187,30 @@ function OutfitCard({
       </div>
 
       <div className="mt-3 flex items-center gap-1">
-        <div className="mr-auto">
-          <p className="text-sm font-medium">
-            {entry.savedAt
-              ? `Saved ${dateFormat.format(new Date(entry.savedAt))}`
-              : "Saved outfit"}
+        <div className="mr-auto min-w-0">
+          {renaming ? (
+            <input
+              autoFocus
+              defaultValue={name}
+              onBlur={(e) => finishRename(e.target.value)}
+              // Enter saves, Escape puts the old name back
+              onKeyDown={(e) => {
+                if (e.key === "Enter") e.target.blur();
+                if (e.key === "Escape") {
+                  e.target.value = name;
+                  e.target.blur();
+                }
+              }}
+              className="w-full rounded-md border border-brand/40 px-1.5 py-0.5 text-sm font-medium outline-none"
+            />
+          ) : (
+            <p className="truncate text-sm font-medium">{name}</p>
+          )}
+          <p className="text-xs text-muted">
+            {entry.savedAt &&
+              `${dateFormat.format(new Date(entry.savedAt))} · `}
+            {pieces.length} pieces
           </p>
-          <p className="text-xs text-muted">{pieces.length} pieces</p>
         </div>
         <button
           type="button"
@@ -201,6 +238,16 @@ function OutfitCard({
             className={`${menuItem} hover:bg-selected`}
           >
             <Shirt size={14} /> Wear today
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMenuOpen(false);
+              setRenaming(true);
+            }}
+            className={`${menuItem} hover:bg-selected`}
+          >
+            <Pencil size={14} /> Rename
           </button>
           <button
             type="button"
