@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
   Cloud,
   CloudDrizzle,
@@ -169,35 +168,24 @@ function OutfitReasons({ hasLayer, temp }) {
   );
 }
 
-// Main component: fetches the weather and shows both cards
-export default function WeatherCard({ hasLayer }) {
-  const [weather, setWeather] = useState(null);
-  const [failed, setFailed] = useState(false);
-  const [isFallback, setIsFallback] = useState(false);
+// Location + weather in one go. Home calls this, because the outfit needs the temperature too.
+export async function loadWeather() {
+  const { lat, lon, isFallback } = await getLocation();
+  const res = await fetch(
+    `http://localhost:5000/api/weather?lat=${lat}&lon=${lon}`,
+  );
+  if (!res.ok) throw new Error("Request failed");
+  return { ...(await res.json()), isFallback };
+}
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const { lat, lon, isFallback } = await getLocation();
-        setIsFallback(isFallback);
-        const res = await fetch(
-          `http://localhost:5000/api/weather?lat=${lat}&lon=${lon}`,
-        );
-        if (!res.ok) throw new Error("Request failed");
-        setWeather(await res.json());
-      } catch {
-        setFailed(true);
-      }
-    }
-    load();
-  }, []);
-
+// Main component: only shows the weather, Home gives it the data
+export default function WeatherCard({ weather, failed, hasLayer }) {
   return (
     <>
       <WeatherSection
         weather={weather}
         failed={failed}
-        isFallback={isFallback}
+        isFallback={weather?.isFallback}
       />
       <OutfitReasons hasLayer={hasLayer} temp={weather?.temp} />
     </>

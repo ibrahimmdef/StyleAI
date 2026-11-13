@@ -3,7 +3,8 @@ import { Check } from "lucide-react";
 import { Brand } from "../components/Sidebar";
 import OutfitPreview from "../components/OutfitPreview";
 import ItemPicker from "../components/ItemPicker";
-import WeatherCard from "../components/WeatherCard";
+import WeatherCard, { loadWeather } from "../components/WeatherCard";
+import { fitsSeason, getSeason, needsLayer } from "../../shared/rules";
 import {
   OPTIONAL_SLOTS,
   SLOTS,
@@ -16,6 +17,8 @@ import {
 // Home page: today's outfit, swapping pieces, generating, saving.
 export default function Home() {
   const [wardrobe, setWardrobe] = useState([]);
+  const [weather, setWeather] = useState(null);
+  const [weatherFailed, setWeatherFailed] = useState(false);
   const [outfit, setOutfit] = useState(() =>
     readStorage("styleai.outfit.v1", {}),
   );
@@ -66,6 +69,13 @@ export default function Home() {
       .catch(() => notify("Could not load your wardrobe."));
   }, []);
 
+  // Weather lives here (not in WeatherCard) because generate needs the temperature
+  useEffect(() => {
+    loadWeather()
+      .then((data) => setWeather(data))
+      .catch(() => setWeatherFailed(true));
+  }, []);
+
   // Toast message and swapping a piece
   function notify(message) {
     clearTimeout(noticeTimer.current);
@@ -80,7 +90,7 @@ export default function Home() {
     );
   }
 
-  // Random outfit from the wardrobe for now. The AI call can go here later.
+  // Random outfit that fits today's season and temperature. The AI call can go here later.
   function generate() {
     if (isGenerating) return;
     if (wardrobe.length === 0) {
@@ -89,10 +99,19 @@ export default function Home() {
     }
     setIsGenerating(true);
     generateTimer.current = setTimeout(() => {
+      const season = getSeason();
       const next = {};
+
       for (const slot of SLOTS) {
-        const options = wardrobe.filter((item) => item.slot === slot);
-        const skip = OPTIONAL_SLOTS.includes(slot) && Math.random() < 0.4;
+        const all = wardrobe.filter((item) => item.slot === slot);
+        const inSeason = all.filter((item) => fitsSeason(item, season));
+        // Nothing for this season? Better something than an empty slot
+        const options = inSeason.length ? inSeason : all;
+
+        let skip = OPTIONAL_SLOTS.includes(slot) && Math.random() < 0.4;
+        // Cold: always add a layer. Warm: leave it out.
+        if (slot === "outerwear" && weather) skip = !needsLayer(weather.temp);
+
         next[slot] =
           options.length && !skip
             ? options[Math.floor(Math.random() * options.length)].id
@@ -171,7 +190,11 @@ export default function Home() {
       {/* Weather on the left, outfit on the right */}
       <div className="grid items-stretch gap-5 min-[1150px]:grid-cols-[270px_minmax(0,1fr)] min-[1400px]:grid-cols-[290px_minmax(0,1fr)]">
         <div className="grid gap-5 sm:grid-cols-2 min-[1150px]:flex min-[1150px]:flex-col">
-          <WeatherCard hasLayer={Boolean(items.outerwear)} />
+          <WeatherCard
+            weather={weather}
+            failed={weatherFailed}
+            hasLayer={Boolean(items.outerwear)}
+          />
         </div>
 
         <OutfitPreview
