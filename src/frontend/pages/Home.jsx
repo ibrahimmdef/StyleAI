@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Check } from "lucide-react";
+import { Check, LoaderCircle, Sparkles } from "lucide-react";
 import { Brand } from "../components/Sidebar";
+import { Button } from "../components/Buttons";
 import OutfitPreview from "../components/OutfitPreview";
 import ItemPicker from "../components/ItemPicker";
 import OutfitPrompt from "../components/OutfitPrompt";
@@ -205,6 +206,15 @@ export default function Home() {
             failed={weatherFailed}
             hasLayer={Boolean(items.outerwear)}
           />
+          {/* Quick shuffle: no text, no pinned pieces */}
+          <Button
+            icon={isGenerating ? LoaderCircle : Sparkles}
+            onClick={() => generate("", [])}
+            disabled={isGenerating}
+            className={`sm:col-span-2 ${isGenerating ? "*:animate-spin" : ""}`}
+          >
+            {isGenerating ? "Styling your day…" : "Generate new outfit"}
+          </Button>
         </div>
 
         <OutfitPreview
