@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Check, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, Plus } from "lucide-react";
 import { CATEGORIES, COLORS, SEASONS, STYLES } from "../../shared/catalog";
 
 const input =
@@ -139,20 +139,6 @@ export default function AddItem() {
       navigate("/wardrobe");
     } catch (err) {
       setError(err.message || "An error occurred while saving.");
-    }
-  }
-
-  async function remove() {
-    if (!confirm(`Delete "${name}" from your wardrobe?`)) return;
-
-    try {
-      const response = await fetch(`http://localhost:5000/api/Items/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error();
-      navigate("/wardrobe");
-    } catch {
-      setError("Item could not be deleted.");
     }
   }
 
@@ -352,15 +338,6 @@ export default function AddItem() {
         )}
 
         <div className="mt-6 flex justify-end gap-3 border-t border-line pt-4">
-          {isEdit && (
-            <button
-              type="button"
-              onClick={remove}
-              className="mr-auto inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-red-600 hover:bg-red-50"
-            >
-              <Trash2 size={18} /> Delete
-            </button>
-          )}
           <button
             type="button"
             onClick={() => navigate("/wardrobe")}

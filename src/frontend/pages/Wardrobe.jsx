@@ -18,6 +18,20 @@ export default function Wardrobe() {
       .then((data) => setClothes(data));
   }, []);
 
+  // The card only asks, the list lives here, so the delete happens here too
+  async function deleteItem(item) {
+    if (!confirm(`Delete "${item.name}" from your wardrobe?`)) return;
+
+    const res = await fetch(`http://localhost:5000/api/Items/${item.id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      alert("Item could not be deleted.");
+      return;
+    }
+    setClothes(clothes.filter((c) => c.id !== item.id));
+  }
+
   const [activeCategory, setActiveCategory] = useState("All");
   const [season, setSeason] = useState("All");
   const [sortBy, setSortBy] = useState("Newest");
@@ -88,7 +102,7 @@ export default function Wardrobe() {
           season={season}
           onSeasonChange={setSeason}
           sortBy={sortBy}
-          onSortByChange={setSortBy}
+          onSortChange={setSortBy}
         />
       </div>
 
@@ -101,7 +115,7 @@ export default function Wardrobe() {
       ) : (
         <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {filteredClothes.map((item) => (
-            <ClothingCard key={item.id} item={item} />
+            <ClothingCard key={item.id} item={item} onDelete={deleteItem} />
           ))}
         </div>
       )}
