@@ -5,18 +5,33 @@
     "category": "Shoes",
     "type": "Sneakers",
     "color": "White",
-    "seasons": ["Spring", "Summer", "Autumn"],
-    "styles": ["Minimal", "Sporty"],
+    "seasons": [
+      "Spring",
+      "Summer",
+      "Autumn"
+    ],
+    "styles": [
+      "Minimal",
+      "Sporty"
+    ],
     "image": "http://localhost:5000/uploads/1793775109583.webp"
   },
   {
     "id": 1793775727584,
     "name": "Ebel Watches",
     "category": "Accessories",
-    "type": "Watches",
+    "type": "Watch",
     "color": "White",
-    "seasons": ["Spring", "Summer", "Autumn", "Winter"],
-    "styles": ["Smart casual", "Casual"],
+    "seasons": [
+      "Spring",
+      "Summer",
+      "Autumn",
+      "Winter"
+    ],
+    "styles": [
+      "Smart casual",
+      "Casual"
+    ],
     "image": "http://localhost:5000/uploads/1793775727583.webp"
   },
   {
@@ -25,8 +40,14 @@
     "category": "Outerwear",
     "type": "Coat",
     "color": "Black",
-    "seasons": ["Winter", "Autumn"],
-    "styles": ["Casual", "Smart casual"],
+    "seasons": [
+      "Winter",
+      "Autumn"
+    ],
+    "styles": [
+      "Casual",
+      "Smart casual"
+    ],
     "image": "http://localhost:5000/uploads/1793776007264.webp"
   },
   {
@@ -35,8 +56,14 @@
     "category": "Bottoms",
     "type": "Trousers",
     "color": "Gray",
-    "seasons": ["Spring", "Autumn"],
-    "styles": ["Casual", "Smart casual"],
+    "seasons": [
+      "Spring",
+      "Autumn"
+    ],
+    "styles": [
+      "Casual",
+      "Smart casual"
+    ],
     "image": "http://localhost:5000/uploads/1793776409455.webp"
   },
   {
@@ -45,8 +72,14 @@
     "category": "Outerwear",
     "type": "Jacket",
     "color": "Black",
-    "seasons": ["Autumn", "Spring"],
-    "styles": ["Minimal", "Smart casual"],
+    "seasons": [
+      "Autumn",
+      "Spring"
+    ],
+    "styles": [
+      "Minimal",
+      "Smart casual"
+    ],
     "image": "http://localhost:5000/uploads/1793776475672.webp"
   },
   {
@@ -55,8 +88,14 @@
     "category": "Accessories",
     "type": "Hat",
     "color": "Brown",
-    "seasons": ["Spring", "Summer"],
-    "styles": ["Minimal", "Sporty"],
+    "seasons": [
+      "Spring",
+      "Summer"
+    ],
+    "styles": [
+      "Minimal",
+      "Sporty"
+    ],
     "image": "http://localhost:5000/uploads/1793780062494.webp"
   },
   {
@@ -65,18 +104,32 @@
     "category": "Shoes",
     "type": "Boots",
     "color": "Black",
-    "seasons": ["Winter"],
-    "styles": ["Smart casual", "Minimal"],
+    "seasons": [
+      "Winter"
+    ],
+    "styles": [
+      "Smart casual",
+      "Minimal"
+    ],
     "image": "http://localhost:5000/uploads/1793781208085.webp"
   },
   {
     "id": 1793781290674,
     "name": "Apple Watch",
     "category": "Accessories",
-    "type": "Watches",
+    "type": "Watch",
     "color": "Black",
-    "seasons": ["Spring", "Summer", "Autumn", "Winter"],
-    "styles": ["Smart casual", "Minimal", "Sporty"],
+    "seasons": [
+      "Spring",
+      "Summer",
+      "Autumn",
+      "Winter"
+    ],
+    "styles": [
+      "Smart casual",
+      "Minimal",
+      "Sporty"
+    ],
     "image": "http://localhost:5000/uploads/1793781269887.webp"
   },
   {
@@ -85,8 +138,15 @@
     "category": "Bottoms",
     "type": "Jeans",
     "color": "Black",
-    "seasons": ["Autumn", "Winter"],
-    "styles": ["Sporty", "Smart casual", "Minimal"],
+    "seasons": [
+      "Autumn",
+      "Winter"
+    ],
+    "styles": [
+      "Sporty",
+      "Smart casual",
+      "Minimal"
+    ],
     "image": "http://localhost:5000/uploads/1793781316246.webp"
   },
   {
@@ -95,8 +155,15 @@
     "category": "Tops",
     "type": "T-shirt",
     "color": "Black",
-    "seasons": ["Spring", "Summer", "Autumn"],
-    "styles": ["Casual", "Minimal"],
+    "seasons": [
+      "Spring",
+      "Summer",
+      "Autumn"
+    ],
+    "styles": [
+      "Casual",
+      "Minimal"
+    ],
     "image": "http://localhost:5000/uploads/1793781370264.webp"
   },
   {
@@ -105,8 +172,15 @@
     "category": "Tops",
     "type": "Shirt",
     "color": "Brown",
-    "seasons": ["Spring", "Summer", "Autumn"],
-    "styles": ["Smart casual", "Minimal"],
+    "seasons": [
+      "Spring",
+      "Summer",
+      "Autumn"
+    ],
+    "styles": [
+      "Smart casual",
+      "Minimal"
+    ],
     "image": "http://localhost:5000/uploads/1793781483842.webp"
   },
   {
@@ -115,18 +189,34 @@
     "category": "Outerwear",
     "type": "Jacket",
     "color": "Brown",
-    "seasons": ["Spring", "Summer", "Autumn"],
-    "styles": ["Casual", "Smart casual"],
+    "seasons": [
+      "Spring",
+      "Summer",
+      "Autumn"
+    ],
+    "styles": [
+      "Casual",
+      "Smart casual"
+    ],
     "image": "http://localhost:5000/uploads/1793781776154.webp"
   },
   {
     "id": 1793781819843,
     "name": "Black Hand Bag",
-    "category": "Accessories",
-    "type": "Bag",
+    "category": "Bags",
+    "type": "Handbag",
     "color": "Black",
-    "seasons": ["Spring", "Summer", "Autumn", "Winter"],
-    "styles": ["Casual", "Minimal", "Smart casual"],
+    "seasons": [
+      "Spring",
+      "Summer",
+      "Autumn",
+      "Winter"
+    ],
+    "styles": [
+      "Casual",
+      "Minimal",
+      "Smart casual"
+    ],
     "image": "http://localhost:5000/uploads/1793781805445.webp"
   }
 ]

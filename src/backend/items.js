@@ -1,5 +1,6 @@
 import { Router } from "express";
 import fs from "fs";
+import { checkItem } from "../shared/catalog.js";
 
 const router = Router();
 const DATA_FILE = "items.json";
@@ -22,6 +23,12 @@ router.post("/Items", (req, res) => {
 
   if (!image) {
     return res.status(400).json({ message: "Image is required" });
+  }
+
+  // Only categories and types from the catalog, so the AI can trust the data
+  const problem = checkItem(req.body);
+  if (problem) {
+    return res.status(400).json({ message: problem });
   }
 
   const newItem = {

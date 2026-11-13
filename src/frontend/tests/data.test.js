@@ -5,8 +5,9 @@ import { getSlot, outfitKey } from "../data.js";
 test("wardrobe items land in the right slot", () => {
   assert.equal(getSlot({ category: "Tops", type: "Shirt" }), "top");
   assert.equal(getSlot({ category: "Shoes", type: "Boots" }), "shoes");
-  assert.equal(getSlot({ category: "Accessories", type: "Bag" }), "bag");
-  assert.equal(getSlot({ category: "Accessories", type: "Watches" }), "accessory");
+  assert.equal(getSlot({ category: "Bags", type: "Handbag" }), "bag");
+  assert.equal(getSlot({ category: "Accessories", type: "Watch" }), "accessory");
+  assert.equal(getSlot({ category: "Something else" }), null);
 });
 
 test("outfit key doesn't care about property order", () => {

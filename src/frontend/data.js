@@ -1,3 +1,5 @@
+import { CATEGORIES } from "../shared/catalog.js";
+
 // Places in an outfit. The order also matters for outfitKey.
 export const SLOTS = ["top", "bottom", "outerwear", "shoes", "bag", "accessory"];
 
@@ -16,12 +18,7 @@ export const SLOT_LABELS = {
 
 // Figures out where a wardrobe item goes in an outfit
 export function getSlot(item) {
-  if (item.category === "Tops") return "top";
-  if (item.category === "Bottoms") return "bottom";
-  if (item.category === "Outerwear") return "outerwear";
-  if (item.category === "Shoes") return "shoes";
-  if (item.type === "Bag") return "bag";
-  return "accessory";
+  return CATEGORIES[item.category]?.slot ?? null;
 }
 
 // Turns an outfit into a string so two outfits are easy to compare: "12|34|-|56|-|-"

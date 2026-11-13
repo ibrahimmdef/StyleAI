@@ -1,26 +1,7 @@
 import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Check, Plus } from "lucide-react";
-
-const TYPES = {
-  Tops: ["T-shirt", "Shirt", "Sweater", "Hoodie"],
-  Outerwear: ["Jacket", "Coat", "Blazer", "Vest"],
-  Bottoms: ["Jeans", "Trousers", "Shorts", "Skirt"],
-  Shoes: ["Sneakers", "Boots", "Loafers", "Sandals"],
-  Accessories: ["Bag", "Belt", "Hat", "Scarf", "Watches", "Jewelry"],
-};
-
-const COLORS = {
-  Brown: "#5b3a2e",
-  Black: "#1c1c1e",
-  White: "#ffffff",
-  Beige: "#d2b49c",
-  Gray: "#9ca3af",
-  Blue: "#6b8cae",
-};
-
-const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
-const STYLES = ["Casual", "Smart casual", "Minimal", "Sporty"];
+import { CATEGORIES, COLORS, SEASONS, STYLES } from "../../shared/catalog";
 
 const input =
   "mt-1 w-full rounded-xl border border-line px-3 py-2 outline-none focus:border-blue-500";
@@ -227,11 +208,11 @@ export default function AddItem({ onAdd }) {
                   value={category}
                   onChange={(e) => {
                     setCategory(e.target.value);
-                    setType(TYPES[e.target.value][0]);
+                    setType(CATEGORIES[e.target.value].types[0]);
                   }}
                   className={input}
                 >
-                  {Object.keys(TYPES).map((c) => (
+                  {Object.keys(CATEGORIES).map((c) => (
                     <option key={c}>{c}</option>
                   ))}
                 </select>
@@ -243,7 +224,7 @@ export default function AddItem({ onAdd }) {
                   onChange={(e) => setType(e.target.value)}
                   className={input}
                 >
-                  {TYPES[category].map((t) => (
+                  {CATEGORIES[category].types.map((t) => (
                     <option key={t}>{t}</option>
                   ))}
                 </select>

@@ -1,11 +1,6 @@
-const categories = [
-  "All",
-  "Tops",
-  "Outerwear",
-  "Bottoms",
-  "Shoes",
-  "Accessories",
-];
+import { CATEGORIES } from "../../shared/catalog";
+
+const categories = ["All", ...Object.keys(CATEGORIES)];
 
 export default function CategoryFilter({ activeCategory, onCategoryChange }) {
   return (
