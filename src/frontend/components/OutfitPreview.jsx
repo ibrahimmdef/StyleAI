@@ -83,27 +83,24 @@ export default function OutfitPreview({
         </div>
       )}
 
-      {/* Empty optional slots */}
-      {missing.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {missing.map((slot) => (
-            <button
-              key={slot}
-              type="button"
-              disabled={isGenerating}
-              onClick={() => onSwap(slot)}
-              className="inline-flex items-center gap-1 rounded-lg border border-dashed border-brand/30 px-3 py-1.5 text-xs text-brand hover:bg-selected"
-            >
-              <Plus size={14} /> Add {SLOT_LABELS[slot]}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* One row: add buttons on the left, save on the right. Always shown. */}
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {missing.map((slot) => (
+          <button
+            key={slot}
+            type="button"
+            disabled={isGenerating}
+            onClick={() => onSwap(slot)}
+            className="inline-flex items-center gap-1 rounded-lg border border-dashed border-brand/30 px-3 py-1.5 text-xs text-brand hover:bg-selected"
+          >
+            <Plus size={14} /> Add {SLOT_LABELS[slot]}
+          </button>
+        ))}
 
-      {/* Whatever Home puts inside <OutfitPreview>...</OutfitPreview> shows up here */}
-      {children}
-
-      <footer className="mt-5 flex flex-wrap items-center gap-3 border-t border-line pt-4">
+        {/* ml-auto pushes this and everything after it to the right */}
+        <span className="ml-auto text-xs text-muted">
+          {pieces.length} pieces
+        </span>
         <Button
           variant="secondary"
           icon={isSaved ? Check : Bookmark}
@@ -111,10 +108,10 @@ export default function OutfitPreview({
         >
           {isSaved ? "Saved" : "Save outfit"}
         </Button>
-        <span className="ml-auto text-xs text-muted">
-          {pieces.length} pieces
-        </span>
-      </footer>
+      </div>
+
+      {/* Whatever Home puts inside <OutfitPreview>...</OutfitPreview> shows up here */}
+      {children}
     </section>
   );
 }

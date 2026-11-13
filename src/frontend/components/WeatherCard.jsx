@@ -166,7 +166,7 @@ function OutfitReasons({ hasLayer, temp, children }) {
       </ul>
 
       {/* Pushed to the bottom of the card */}
-      <div className="mt-auto pt-6">{children}</div>
+      <div className=" pt-6">{children}</div>
     </section>
   );
 }
