@@ -48,5 +48,85 @@
     "seasons": ["Autumn", "Spring"],
     "styles": ["Minimal", "Smart casual"],
     "image": "http://localhost:5000/uploads/1793776475672.webp"
+  },
+  {
+    "id": 1793780062496,
+    "name": "Mad Man Cap",
+    "category": "Accessories",
+    "type": "Hat",
+    "color": "Brown",
+    "seasons": ["Spring", "Summer"],
+    "styles": ["Minimal", "Sporty"],
+    "image": "http://localhost:5000/uploads/1793780062494.webp"
+  },
+  {
+    "id": 1793781230472,
+    "name": "Black Boat",
+    "category": "Shoes",
+    "type": "Boots",
+    "color": "Black",
+    "seasons": ["Winter"],
+    "styles": ["Smart casual", "Minimal"],
+    "image": "http://localhost:5000/uploads/1793781208085.webp"
+  },
+  {
+    "id": 1793781290674,
+    "name": "Apple Watch",
+    "category": "Accessories",
+    "type": "Watches",
+    "color": "Black",
+    "seasons": ["Spring", "Summer", "Autumn", "Winter"],
+    "styles": ["Smart casual", "Minimal", "Sporty"],
+    "image": "http://localhost:5000/uploads/1793781269887.webp"
+  },
+  {
+    "id": 1793781337124,
+    "name": "Baggy Jeans",
+    "category": "Bottoms",
+    "type": "Jeans",
+    "color": "Black",
+    "seasons": ["Autumn", "Winter"],
+    "styles": ["Sporty", "Smart casual", "Minimal"],
+    "image": "http://localhost:5000/uploads/1793781316246.webp"
+  },
+  {
+    "id": 1793781382685,
+    "name": "Black Tshirt",
+    "category": "Tops",
+    "type": "T-shirt",
+    "color": "Black",
+    "seasons": ["Spring", "Summer", "Autumn"],
+    "styles": ["Casual", "Minimal"],
+    "image": "http://localhost:5000/uploads/1793781370264.webp"
+  },
+  {
+    "id": 1793781498442,
+    "name": "White T-shirt",
+    "category": "Tops",
+    "type": "Shirt",
+    "color": "Brown",
+    "seasons": ["Spring", "Summer", "Autumn"],
+    "styles": ["Smart casual", "Minimal"],
+    "image": "http://localhost:5000/uploads/1793781483842.webp"
+  },
+  {
+    "id": 1793781782437,
+    "name": "White Shirt",
+    "category": "Outerwear",
+    "type": "Jacket",
+    "color": "Brown",
+    "seasons": ["Spring", "Summer", "Autumn"],
+    "styles": ["Casual", "Smart casual"],
+    "image": "http://localhost:5000/uploads/1793781776154.webp"
+  },
+  {
+    "id": 1793781819843,
+    "name": "Black Hand Bag",
+    "category": "Accessories",
+    "type": "Bag",
+    "color": "Black",
+    "seasons": ["Spring", "Summer", "Autumn", "Winter"],
+    "styles": ["Casual", "Minimal", "Smart casual"],
+    "image": "http://localhost:5000/uploads/1793781805445.webp"
   }
 ]

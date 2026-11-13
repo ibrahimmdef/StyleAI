@@ -32,7 +32,6 @@ export default function App() {
   );
 }
 
-// Bütün səhifələrin ortaq çərçivəsi.
 function AppLayout() {
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,#e6f2ff_0%,#f2f8ff_55%,#eaf4ff_100%)]  4xl:px-7 4xl:py-12">
@@ -51,7 +50,6 @@ function AppLayout() {
   );
 }
 
-// Digər səhifələri yazanda bu route-ları öz komponentlərinlə əvəz et.
 function PlaceholderPage({ title }) {
   return (
     <section className="flex min-h-[70vh] flex-col items-center justify-center rounded-2xl border border-line bg-white p-8 text-center">

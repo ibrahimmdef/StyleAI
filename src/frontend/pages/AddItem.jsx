@@ -34,33 +34,61 @@ export default function AddItem({ onAdd }) {
   const [color, setColor] = useState("Brown");
   const [seasons, setSeasons] = useState([]);
   const [styles, setStyles] = useState([]);
-  const [file, setFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [processing, setProcessing] = useState(false);
   const [preview, setPreview] = useState("");
   const [error, setError] = useState("");
 
   const toggle = (list, setList, v) =>
     setList(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
 
-  function pickFile(e) {
+  async function pickFile(e) {
     const f = e.target.files?.[0];
     if (!f) return;
     if (
-      !["image/jpeg", "image/png"].includes(f.type) ||
+      !["image/jpeg", "image/png", "image/webp", "image/avif"].includes(
+        f.type,
+      ) ||
       f.size > 10 * 1024 * 1024
     ) {
-      setError("Use a JPG or PNG photo up to 10 MB.");
+      setError("Use a JPG, PNG, WebP or AVIF photo up to 10 MB.");
       return;
     }
+
     setError("");
-    setFile(f);
+    setImageUrl("");
     setPreview(URL.createObjectURL(f));
+    setProcessing(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("image", f);
+
+      const response = await fetch("http://localhost:5000/api/process-image", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Photo could not be processed.");
+      }
+
+      setImageUrl(data.image);
+      setPreview(data.image);
+    } catch (err) {
+      setError(err.message || "Photo could not be processed.");
+      setPreview("");
+    } finally {
+      setProcessing(false);
+    }
   }
 
   async function submit(e) {
     e.preventDefault();
     setError("");
 
-    if (!file) {
+    if (!imageUrl) {
       setError("Add an item photo.");
       return;
     }
@@ -80,27 +108,24 @@ export default function AddItem({ onAdd }) {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("name", name.trim());
-    formData.append("category", category);
-    formData.append("type", type);
-    formData.append("color", color);
-    formData.append("seasons", JSON.stringify(seasons));
-    formData.append("styles", JSON.stringify(styles));
-
-    if (file) {
-      formData.append("image", file);
-    }
-
     try {
       const response = await fetch("http://localhost:5000/api/Items", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          category,
+          type,
+          color,
+          seasons,
+          styles,
+          image: imageUrl,
+        }),
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Item could not be saved.");
+        const data = await response.json();
+        throw new Error(data.message || "Item could not be saved.");
       }
 
       navigate("/wardrobe");
@@ -134,18 +159,31 @@ export default function AddItem({ onAdd }) {
         className="mt-6 rounded-2xl bg-white p-6 shadow-sm"
       >
         <div className="mt-6 grid gap-6 md:grid-cols-2">
-          {/* Foto */}
+          {/* Photo */}
           <div>
             <h3 className="font-semibold">Item photo</h3>
-            <div className="mt-2 grid aspect-square place-items-center overflow-hidden rounded-xl border border-line bg-slate-50">
+            <div className="relative mt-2 grid aspect-square place-items-center overflow-hidden rounded-xl border border-line bg-slate-50">
               {preview ? (
                 <img
                   src={preview}
                   alt="Preview"
-                  className="h-full w-full object-contain"
+                  className={`h-full w-full object-contain transition ${
+                    processing ? "blur-md" : ""
+                  }`}
                 />
               ) : (
                 <span className="text-sm text-slate-400">No photo yet</span>
+              )}
+
+              {processing && (
+                <div className="absolute inset-0 grid place-items-center bg-white/40">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="size-10 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600" />
+                    <p className="text-sm text-slate-600">
+                      Removing background...
+                    </p>
+                  </div>
+                </div>
               )}
             </div>
             <div className="mt-3 flex items-center justify-between gap-3">
@@ -153,21 +191,22 @@ export default function AddItem({ onAdd }) {
               <input
                 ref={fileRef}
                 type="file"
-                accept="image/png,image/jpeg"
+                accept="image/png,image/jpeg,image/webp,image/avif"
                 onChange={pickFile}
                 hidden
               />
               <button
                 type="button"
+                disabled={processing}
                 onClick={() => fileRef.current.click()}
-                className="rounded-xl border border-blue-200 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50"
+                className="rounded-xl border border-blue-200 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 disabled:opacity-50"
               >
                 {preview ? "Replace photo" : "Add photo"}
               </button>
             </div>
           </div>
 
-          {/* Detallar */}
+          {/* Details */}
           <div className="space-y-4">
             <h3 className="font-semibold">Item details</h3>
 
@@ -296,7 +335,8 @@ export default function AddItem({ onAdd }) {
           </button>
           <button
             type="submit"
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-white hover:bg-blue-700"
+            disabled={processing}
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-white hover:bg-blue-700 disabled:opacity-50"
           >
             <Plus size={18} /> Add to wardrobe
           </button>
