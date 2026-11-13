@@ -13,6 +13,7 @@ export default function App() {
         <Route index element={<Home />} />
         <Route path="wardrobe" element={<Wardrobe />} />
         <Route path="/wardrobe/new" element={<AddItem />} />
+        <Route path="/wardrobe/:id/edit" element={<AddItem />} />
         <Route
           path="outfits"
           element={<PlaceholderPage title="My Outfits" />}

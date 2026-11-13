@@ -1,12 +1,15 @@
-import { useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, Plus } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Check, Plus, Trash2 } from "lucide-react";
 import { CATEGORIES, COLORS, SEASONS, STYLES } from "../../shared/catalog";
 
 const input =
   "mt-1 w-full rounded-xl border border-line px-3 py-2 outline-none focus:border-blue-500";
 
-export default function AddItem({ onAdd }) {
+// Same form for adding and editing. If the URL has an id, we're editing.
+export default function AddItem() {
+  const { id } = useParams();
+  const isEdit = Boolean(id);
   const navigate = useNavigate();
   const fileRef = useRef(null);
   const [name, setName] = useState("");
@@ -19,6 +22,25 @@ export default function AddItem({ onAdd }) {
   const [processing, setProcessing] = useState(false);
   const [preview, setPreview] = useState("");
   const [error, setError] = useState("");
+
+  // Editing: load the item and fill the form with it
+  useEffect(() => {
+    if (!isEdit) return;
+
+    fetch(`http://localhost:5000/api/Items/${id}`)
+      .then((res) => res.json())
+      .then((item) => {
+        setName(item.name);
+        setCategory(item.category);
+        setType(item.type);
+        setColor(item.color);
+        setSeasons(item.seasons ?? []);
+        setStyles(item.styles ?? []);
+        setImageUrl(item.image);
+        setPreview(item.image);
+      })
+      .catch(() => setError("Could not load this item."));
+  }, [id, isEdit]);
 
   const toggle = (list, setList, v) =>
     setList(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
@@ -89,9 +111,14 @@ export default function AddItem({ onAdd }) {
       return;
     }
 
+    // New item -> POST to the list, existing item -> PUT to that item
+    const url = isEdit
+      ? `http://localhost:5000/api/Items/${id}`
+      : "http://localhost:5000/api/Items";
+
     try {
-      const response = await fetch("http://localhost:5000/api/Items", {
-        method: "POST",
+      const response = await fetch(url, {
+        method: isEdit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
@@ -115,6 +142,20 @@ export default function AddItem({ onAdd }) {
     }
   }
 
+  async function remove() {
+    if (!confirm(`Delete "${name}" from your wardrobe?`)) return;
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/Items/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error();
+      navigate("/wardrobe");
+    } catch {
+      setError("Item could not be deleted.");
+    }
+  }
+
   const chip = (active) =>
     `flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-sm ${
       active
@@ -130,9 +171,13 @@ export default function AddItem({ onAdd }) {
       >
         <ArrowLeft size={18} /> Back to wardrobe
       </Link>
-      <h1 className="mt-3 text-3xl font-bold">Add a new item</h1>
+      <h1 className="mt-3 text-3xl font-bold">
+        {isEdit ? "Edit item" : "Add a new item"}
+      </h1>
       <p className="text-slate-500">
-        Add a piece to get better outfit suggestions.
+        {isEdit
+          ? "Fix the details so your outfits come out right."
+          : "Add a piece to get better outfit suggestions."}
       </p>
 
       <form
@@ -307,6 +352,15 @@ export default function AddItem({ onAdd }) {
         )}
 
         <div className="mt-6 flex justify-end gap-3 border-t border-line pt-4">
+          {isEdit && (
+            <button
+              type="button"
+              onClick={remove}
+              className="mr-auto inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-red-600 hover:bg-red-50"
+            >
+              <Trash2 size={18} /> Delete
+            </button>
+          )}
           <button
             type="button"
             onClick={() => navigate("/wardrobe")}
@@ -319,7 +373,15 @@ export default function AddItem({ onAdd }) {
             disabled={processing}
             className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-white hover:bg-blue-700 disabled:opacity-50"
           >
-            <Plus size={18} /> Add to wardrobe
+            {isEdit ? (
+              <>
+                <Check size={18} /> Save changes
+              </>
+            ) : (
+              <>
+                <Plus size={18} /> Add to wardrobe
+              </>
+            )}
           </button>
         </div>
       </form>

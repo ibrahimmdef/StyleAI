@@ -1,6 +1,12 @@
+import { Link } from "react-router-dom";
+
+// Clicking a card opens the edit page for that item
 export default function ClothingCard({ item }) {
   return (
-    <article className="overflow-hidden rounded-2xl border border-line bg-white p-3">
+    <Link
+      to={`/wardrobe/${item.id}/edit`}
+      className="block overflow-hidden rounded-2xl border border-line bg-white p-3 transition hover:border-brand/40"
+    >
       <div className="flex h-40 items-center justify-center rounded-xl bg-slate-50">
         {item.image ? (
           <img
@@ -16,8 +22,8 @@ export default function ClothingCard({ item }) {
       <h3 className="mt-3 font-medium text-slate-900">{item.name}</h3>
 
       <p className="mt-1 text-sm text-slate-500">
-        {item.category} · {item.season}
+        {item.type} · {(item.seasons ?? []).join(", ")}
       </p>
-    </article>
+    </Link>
   );
 }
