@@ -29,7 +29,8 @@ router.post("/process-image", upload.single("image"), async (req, res) => {
     const result = await removeBackground(image);
     const noBg = Buffer.from(await result.arrayBuffer());
 
-    const output = await sharp(noBg).webp({ quality: 80 }).toBuffer();
+    // Cut away the empty transparent space around the item
+    const output = await sharp(noBg).trim().webp({ quality: 80 }).toBuffer();
 
     const fileName = `${Date.now()}.webp`;
     await fs.promises.writeFile(path.join("uploads", fileName), output);
