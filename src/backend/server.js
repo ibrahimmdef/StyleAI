@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 
-import itemsRoutes from "./items.js";
+import itemsRoutes, { cleanUploads } from "./items.js";
 import replicateRoutes from "./replicate.js";
 import weatherRoutes from "./weather.js";
 
@@ -16,6 +16,10 @@ app.use("/uploads", express.static("uploads"));
 app.use("/api", itemsRoutes);
 app.use("/api", replicateRoutes);
 app.use("/api", weatherRoutes);
+
+// Clear leftover photos on start, then once an hour
+cleanUploads();
+setInterval(cleanUploads, 60 * 60 * 1000);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

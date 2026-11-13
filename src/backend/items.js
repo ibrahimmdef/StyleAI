@@ -25,6 +25,22 @@ function deletePhoto(imageUrl) {
   });
 }
 
+// Deletes photos no item uses, e.g. someone uploaded a photo and hit Cancel.
+// Only files older than an hour, so a photo that's being added right now is safe.
+export function cleanUploads() {
+  if (!fs.existsSync("uploads")) return;
+
+  const used = readItems().map((item) => path.basename(item.image ?? ""));
+  const hourAgo = Date.now() - 60 * 60 * 1000;
+
+  for (const name of fs.readdirSync("uploads")) {
+    const file = path.join("uploads", name);
+    if (used.includes(name) || fs.statSync(file).mtimeMs > hourAgo) continue;
+    fs.rmSync(file, { force: true });
+    console.log("Removed unused photo:", name);
+  }
+}
+
 router.get("/Items", (req, res) => {
   res.json(readItems());
 });
