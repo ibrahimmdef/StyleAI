@@ -10,8 +10,11 @@ import { fitsSeason, getSeason, needsLayer } from "../../shared/rules";
 import {
   OPTIONAL_SLOTS,
   SLOTS,
+  STORAGE,
   getSlot,
   outfitKey,
+  readFavorites,
+  readSaved,
   readStorage,
   writeStorage,
 } from "../data";
@@ -21,27 +24,9 @@ export default function Home() {
   const [wardrobe, setWardrobe] = useState([]);
   const [weather, setWeather] = useState(null);
   const [weatherFailed, setWeatherFailed] = useState(false);
-  const [outfit, setOutfit] = useState(() =>
-    readStorage("styleai.outfit.v1", {}),
-  );
-  const [saved, setSaved] = useState(() => {
-    const value = readStorage("styleai.saved.v1", []);
-    return Array.isArray(value)
-      ? value.filter(
-          (entry) =>
-            entry &&
-            typeof entry.key === "string" &&
-            entry.slots &&
-            typeof entry.slots === "object",
-        )
-      : [];
-  });
-  const [favorites, setFavorites] = useState(() => {
-    const value = readStorage("styleai.favorites.v1", []);
-    return Array.isArray(value)
-      ? value.filter((key) => typeof key === "string")
-      : [];
-  });
+  const [outfit, setOutfit] = useState(() => readStorage(STORAGE.outfit, {}));
+  const [saved, setSaved] = useState(readSaved);
+  const [favorites, setFavorites] = useState(readFavorites);
   const [isGenerating, setIsGenerating] = useState(false);
   const [notice, setNotice] = useState("");
   const [activeSlot, setActiveSlot] = useState(null);
@@ -58,7 +43,7 @@ export default function Home() {
   );
 
   useEffect(() => {
-    writeStorage("styleai.outfit.v1", outfit);
+    writeStorage(STORAGE.outfit, outfit);
   }, [outfit]);
 
   // Load the real wardrobe from the backend
@@ -139,27 +124,34 @@ export default function Home() {
   const isSaved = saved.some((entry) => entry.key === key);
   const isFavorite = favorites.includes(key);
 
+  // Adds the current outfit to the saved list. Returns false if storage failed.
+  function addToSaved() {
+    const next = [
+      ...saved,
+      { key, slots: outfit, savedAt: new Date().toISOString() },
+    ];
+    if (!writeStorage(STORAGE.saved, next)) return false;
+    setSaved(next);
+    return true;
+  }
+
   function save() {
     if (isSaved) {
       notify("This outfit is already saved.");
       return;
     }
-    const next = [
-      ...saved,
-      { key, slots: outfit, savedAt: new Date().toISOString() },
-    ];
-    if (writeStorage("styleai.saved.v1", next)) {
-      setSaved(next);
-      notify("Outfit saved. A little inspiration for later.");
-    } else
-      notify("Could not save. Please allow browser storage and try again.");
+    if (addToSaved()) notify("Outfit saved. A little inspiration for later.");
+    else notify("Could not save. Please allow browser storage and try again.");
   }
 
   function toggleFavorite() {
+    // A favorite should show up on the Outfits page, so save it too
+    if (!isFavorite && !isSaved) addToSaved();
+
     const next = isFavorite
       ? favorites.filter((value) => value !== key)
       : [...favorites, key];
-    if (writeStorage("styleai.favorites.v1", next)) {
+    if (writeStorage(STORAGE.favorites, next)) {
       setFavorites(next);
       notify(isFavorite ? "Removed from favorites." : "Added to favorites.");
     } else notify("Could not update favorites. Please allow browser storage.");

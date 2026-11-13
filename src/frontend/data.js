@@ -1,7 +1,14 @@
 import { CATEGORIES } from "../shared/catalog.js";
 
 // Places in an outfit. The order also matters for outfitKey.
-export const SLOTS = ["top", "bottom", "outerwear", "shoes", "bag", "accessory"];
+export const SLOTS = [
+  "top",
+  "bottom",
+  "outerwear",
+  "shoes",
+  "bag",
+  "accessory",
+];
 
 // These can be left empty
 export const OPTIONAL_SLOTS = ["outerwear", "bag", "accessory"];
@@ -24,6 +31,27 @@ export function getSlot(item) {
 // Turns an outfit into a string so two outfits are easy to compare: "12|34|-|56|-|-"
 export function outfitKey(outfit) {
   return SLOTS.map((slot) => outfit[slot] ?? "-").join("|");
+}
+
+// localStorage keys in one place, so Home and Outfits can't mistype them
+export const STORAGE = {
+  outfit: "styleai.outfit.v1",
+  saved: "styleai.saved.v1",
+  favorites: "styleai.favorites.v1",
+};
+
+// Saved outfits: [{ key, slots, savedAt }]. Broken entries are skipped.
+export function readSaved() {
+  const value = readStorage(STORAGE.saved, []);
+  if (!Array.isArray(value)) return [];
+  return value.filter((entry) => typeof entry?.key === "string" && entry.slots);
+}
+
+// Favorites are a list of outfit keys
+export function readFavorites() {
+  const value = readStorage(STORAGE.favorites, []);
+  if (!Array.isArray(value)) return [];
+  return value.filter((key) => typeof key === "string");
 }
 
 export function readStorage(key, fallback) {
