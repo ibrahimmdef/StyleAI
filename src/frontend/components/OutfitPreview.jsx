@@ -1,47 +1,26 @@
 import {
   ArrowLeftRight,
-  Plus,
   Bookmark,
   Check,
   Heart,
-  LoaderCircle,
+  Plus,
   Sparkles,
 } from "lucide-react";
 import { Button, IconButton } from "./Buttons";
-import { SLOT_LABELS } from "../data";
+import { OPTIONAL_SLOTS, SLOTS, SLOT_LABELS } from "../data";
 
-const accessories = ["bag", "glasses", "earrings", "necklace"];
+// Clothes grow to fill the free space, small things keep a fixed size
+// so boots don't end up huge. Full class names, so Tailwind can find them.
+const SIZES = {
+  top: "flex-2",
+  bottom: "flex-3",
+  outerwear: "flex-3",
+  shoes: "h-28 sm:h-36",
+  bag: "h-24 sm:h-32",
+  accessory: "h-20 sm:h-28",
+};
 
-// Layout with and without a jacket
-const layered = {
-  top: "col-start-1 row-start-1 row-span-2",
-  bottom: "col-start-1 row-start-3 row-span-4",
-  outerwear: "col-start-2 row-start-1 row-span-4",
-  shoes: "col-start-2 row-start-5 row-span-2",
-  glasses: "col-start-3 row-start-1",
-  bag: "col-start-3 row-start-2 row-span-2",
-  earrings: "col-start-3 row-start-4",
-  necklace: "col-start-3 row-start-5 row-span-2",
-};
-const unlayered = {
-  top: "col-start-1 row-start-1 row-span-2",
-  bottom: "col-start-1 row-start-3 row-span-4",
-  glasses: "col-start-2 row-start-1",
-  bag: "col-start-2 row-start-2 row-span-2",
-  earrings: "col-start-3 row-start-1 row-span-2",
-  necklace: "col-start-3 row-start-3 row-span-2",
-  shoes: "col-start-2 col-span-2 row-start-5 row-span-2",
-};
-const imageSizes = {
-  top: "max-h-full max-w-[90%]",
-  bottom: "max-h-full max-w-[90%]",
-  outerwear: "max-h-full max-w-full",
-  shoes: "max-h-[92%] max-w-full",
-  glasses: "max-h-[76%] max-w-[94%]",
-  bag: "max-h-[94%] max-w-[92%]",
-  earrings: "max-h-[90%] max-w-[74%]",
-  necklace: "max-h-[92%] max-w-[84%]",
-};
+const tag = "rounded-full bg-selected px-3 py-1 text-xs text-muted";
 
 export default function OutfitPreview({
   items,
@@ -53,128 +32,96 @@ export default function OutfitPreview({
   onGenerate,
   onSwap,
 }) {
-  const count = Object.values(items).filter(Boolean).length;
+  const pieces = SLOTS.filter((slot) => items[slot]);
+  const missing = OPTIONAL_SLOTS.filter((slot) => !items[slot]);
+
+  // Two pieces per column: 4 pieces -> 2 columns, 5 or 6 -> 3 columns
+  const columns = [];
+  for (let i = 0; i < pieces.length; i += 2) {
+    columns.push(pieces.slice(i, i + 2));
+  }
 
   return (
-    <section
-      aria-labelledby="todays-outfit-title"
-      className="flex min-w-0 flex-col rounded-[14px] border border-line bg-white p-4 shadow-soft sm:p-5 xl:p-6"
-    >
-      <header className="mb-5 flex items-center gap-3">
-        <h2
-          id="todays-outfit-title"
-          className="mr-auto text-lg font-semibold tracking-tight sm:text-xl"
-        >
-          Today’s Outfit
-        </h2>
-        <span className="hidden rounded-full bg-[#edf5ff] px-3 py-1.5 text-[10px] text-muted sm:inline-flex">
-          Casual
-        </span>
-        <span className="hidden rounded-full bg-[#edf5ff] px-3 py-1.5 text-[10px] text-muted sm:inline-flex">
-          Autumn
-        </span>
-        <span className="mx-1 hidden h-6 w-px bg-line sm:block" />
-        <IconButton
-          label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-          icon={Heart}
-          aria-pressed={isFavorite}
+    <section className="flex min-w-0 flex-col rounded-2xl border border-line bg-white p-4 sm:p-6">
+      <header className="mb-4 flex items-center gap-3">
+        <h2 className="mr-auto text-xl font-semibold">Today’s Outfit</h2>
+        <span className={tag}>Casual</span>
+        <span className={tag}>Autumn</span>
+        <button
+          type="button"
           onClick={onFavorite}
-          className={`size-9 border-transparent text-[#476897] ${isFavorite ? "[&>svg]:fill-brand [&>svg]:text-brand" : ""}`}
-        />
+          aria-label="Favorite"
+          className="p-1 text-brand"
+        >
+          <Heart size={20} className={isFavorite ? "fill-current" : ""} />
+        </button>
       </header>
 
-      <OutfitCanvas items={items} onSwap={onSwap} disabled={isGenerating} />
+      {/* Outfit pieces */}
+      {pieces.length === 0 ? (
+        <p className="py-24 text-center text-sm text-muted">
+          No outfit yet. Generate one from your wardrobe.
+        </p>
+      ) : (
+        <div className="flex h-96 gap-4 sm:h-120">
+          {columns.map((column) => (
+            <div
+              key={column[0]}
+              className="flex min-w-0 flex-1 flex-col justify-center gap-3"
+            >
+              {column.map((slot) => (
+                <div key={slot} className={`relative min-h-0 ${SIZES[slot]}`}>
+                  <img
+                    src={items[slot].image}
+                    alt={items[slot].name}
+                    className="h-full w-full object-contain"
+                  />
+                  <IconButton
+                    label={`Change ${SLOT_LABELS[slot]}`}
+                    icon={ArrowLeftRight}
+                    disabled={isGenerating}
+                    onClick={() => onSwap(slot)}
+                    className="absolute top-0 right-0 size-8"
+                  />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
 
-      <footer className="mt-5 flex flex-wrap items-center gap-2.5 border-t border-line pt-4 sm:gap-3">
-        <Button
-          icon={isGenerating ? LoaderCircle : Sparkles}
-          onClick={onGenerate}
-          disabled={isGenerating}
-          className={`flex-1 px-3 sm:flex-none sm:px-5 ${isGenerating ? "[&>svg]:animate-spin" : ""}`}
-        >
+      {/* Empty optional slots */}
+      {missing.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {missing.map((slot) => (
+            <button
+              key={slot}
+              type="button"
+              disabled={isGenerating}
+              onClick={() => onSwap(slot)}
+              className="inline-flex items-center gap-1 rounded-lg border border-dashed border-brand/30 px-3 py-1.5 text-xs text-brand hover:bg-selected"
+            >
+              <Plus size={14} /> Add {SLOT_LABELS[slot]}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <footer className="mt-5 flex flex-wrap items-center gap-3 border-t border-line pt-4">
+        <Button icon={Sparkles} onClick={onGenerate} disabled={isGenerating}>
           {isGenerating ? "Styling your day…" : "Generate new outfit"}
         </Button>
         <Button
           variant="secondary"
           icon={isSaved ? Check : Bookmark}
           onClick={onSave}
-          className="px-3 sm:px-5"
         >
           {isSaved ? "Saved" : "Save outfit"}
         </Button>
-        <span
-          className="ml-auto text-[11px] whitespace-nowrap text-muted"
-          aria-live="polite"
-        >
-          {count} pieces
+        <span className="ml-auto text-xs text-muted">
+          {pieces.length} pieces
         </span>
       </footer>
     </section>
-  );
-}
-
-function OutfitCanvas({ items, onSwap, disabled }) {
-  const hasLayer = Boolean(items.outerwear);
-  const placement = hasLayer ? layered : unlayered;
-  const missing = accessories.filter((slot) => !items[slot]);
-
-  return (
-    <div className="relative">
-      <div
-        className={`grid h-[clamp(360px,calc(100dvh-430px),550px)] grid-rows-[repeat(6,minmax(0,1fr))] gap-x-3 gap-y-2 ${hasLayer ? "grid-cols-[1fr_1.16fr_.76fr]" : "grid-cols-[1.12fr_.8fr_.55fr]"}`}
-      >
-        {Object.entries(placement).map(([slot, position]) => {
-          const item = items[slot];
-          if (!item) return null;
-          return (
-            <div
-              key={slot}
-              className={`group relative flex min-h-0 min-w-0 items-center justify-center p-1.5 ${position}`}
-            >
-              <img
-                src={item.image}
-                alt={item.name}
-                draggable="false"
-                className={`h-full w-full object-contain ${imageSizes[slot]}`}
-              />
-              <IconButton
-                label={`Change ${SLOT_LABELS[slot]}`}
-                icon={ArrowLeftRight}
-                disabled={disabled}
-                onClick={() => onSwap(slot)}
-                className="absolute top-1 right-0 size-8 shadow-[0_2px_8px_#dce8f8] sm:size-8 [&>svg]:size-3.5"
-              />
-            </div>
-          );
-        })}
-      </div>
-
-      {!hasLayer && (
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => onSwap("outerwear")}
-          className="mt-3 inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-dashed border-brand/30 px-3 text-xs text-brand hover:bg-selected"
-        >
-          <Plus size={14} /> Add a layer
-        </button>
-      )}
-
-      {missing.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-2">
-          {missing.map((slot) => (
-            <button
-              key={slot}
-              type="button"
-              disabled={disabled}
-              onClick={() => onSwap(slot)}
-              className="min-h-9 rounded-lg px-2 text-xs text-brand hover:bg-selected"
-            >
-              + Add {SLOT_LABELS[slot]}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
   );
 }
