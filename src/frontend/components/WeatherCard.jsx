@@ -128,7 +128,7 @@ function WeatherSection({ weather, failed, isFallback }) {
 }
 
 // Short reasons for the outfit ("Why this outfit?")
-function OutfitReasons({ hasLayer, temp }) {
+function OutfitReasons({ hasLayer, temp, children }) {
   const reasons = [
     {
       icon: Cloud,
@@ -149,7 +149,7 @@ function OutfitReasons({ hasLayer, temp }) {
   return (
     <section
       aria-labelledby="outfit-reasons-title"
-      className="flex-1 rounded-[14px] border border-line bg-white/90 p-5 xl:p-6"
+      className="flex flex-1 flex-col rounded-[14px] border border-line bg-white/90 p-5 xl:p-6"
     >
       <h2 id="outfit-reasons-title" className="text-base font-semibold">
         Why this outfit?
@@ -164,6 +164,9 @@ function OutfitReasons({ hasLayer, temp }) {
           </li>
         ))}
       </ul>
+
+      {/* Pushed to the bottom of the card */}
+      <div className="mt-auto pt-6">{children}</div>
     </section>
   );
 }
@@ -179,7 +182,7 @@ export async function loadWeather() {
 }
 
 // Main component: only shows the weather, Home gives it the data
-export default function WeatherCard({ weather, failed, hasLayer }) {
+export default function WeatherCard({ weather, failed, hasLayer, children }) {
   return (
     <>
       <WeatherSection
@@ -187,7 +190,9 @@ export default function WeatherCard({ weather, failed, hasLayer }) {
         failed={failed}
         isFallback={weather?.isFallback}
       />
-      <OutfitReasons hasLayer={hasLayer} temp={weather?.temp} />
+      <OutfitReasons hasLayer={hasLayer} temp={weather?.temp}>
+        {children}
+      </OutfitReasons>
     </>
   );
 }

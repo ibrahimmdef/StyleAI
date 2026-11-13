@@ -205,16 +205,17 @@ export default function Home() {
             weather={weather}
             failed={weatherFailed}
             hasLayer={Boolean(items.outerwear)}
-          />
-          {/* Quick shuffle: no text, no pinned pieces */}
-          <Button
-            icon={isGenerating ? LoaderCircle : Sparkles}
-            onClick={() => generate("", [])}
-            disabled={isGenerating}
-            className={`sm:col-span-2 ${isGenerating ? "*:animate-spin" : ""}`}
           >
-            {isGenerating ? "Styling your day…" : "Generate new outfit"}
-          </Button>
+            {/* Quick shuffle: no text, no pinned pieces */}
+            <Button
+              icon={isGenerating ? LoaderCircle : Sparkles}
+              onClick={() => generate("", [])}
+              disabled={isGenerating}
+              className={`w-full ${isGenerating ? "*:animate-spin" : ""}`}
+            >
+              {isGenerating ? "Styling your day…" : "Generate new outfit"}
+            </Button>
+          </WeatherCard>
         </div>
 
         <OutfitPreview
