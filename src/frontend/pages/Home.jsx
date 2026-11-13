@@ -1,31 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Check,
-  Cloud,
-  CloudSun,
-  MapPin,
-  Sun,
-  Layers2,
-  Palette,
-} from "lucide-react";
+import { Check } from "lucide-react";
 import { Brand } from "../components/Sidebar";
 import OutfitPreview from "../components/OutfitPreview";
 import ItemPicker from "../components/ItemPicker";
+import WeatherCard from "../components/WeatherCard";
 import {
-  defaultOutfit,
-  itemById,
-  outfitPresets,
-  normalizeOutfit,
+  OPTIONAL_SLOTS,
+  SLOTS,
+  getSlot,
   outfitKey,
   readStorage,
-  replaceSlot,
   writeStorage,
 } from "../data";
 
-// HOME: seçimlər, dəyişmə, generasiya, saxlama və səhifənin görünüşü.
+// Home page: today's outfit, swapping pieces, generating, saving.
 export default function Home() {
+  const [wardrobe, setWardrobe] = useState([]);
   const [outfit, setOutfit] = useState(() =>
-    normalizeOutfit(readStorage("styleai.outfit.v1", defaultOutfit)),
+    readStorage("styleai.outfit.v1", {}),
   );
   const [saved, setSaved] = useState(() => {
     const value = readStorage("styleai.saved.v1", []);
@@ -51,6 +43,7 @@ export default function Home() {
   const closePicker = useCallback(() => setActiveSlot(null), []);
   const generateTimer = useRef();
   const noticeTimer = useRef();
+
   useEffect(
     () => () => {
       clearTimeout(generateTimer.current);
@@ -58,11 +51,22 @@ export default function Home() {
     },
     [],
   );
+
   useEffect(() => {
     writeStorage("styleai.outfit.v1", outfit);
   }, [outfit]);
 
-  // Bildiriş və geyim dəyişmə əməliyyatları.
+  // Load the real wardrobe from the backend
+  useEffect(() => {
+    fetch("http://localhost:5000/api/Items")
+      .then((res) => res.json())
+      .then((data) =>
+        setWardrobe(data.map((item) => ({ ...item, slot: getSlot(item) }))),
+      )
+      .catch(() => notify("Could not load your wardrobe."));
+  }, []);
+
+  // Toast message and swapping a piece
   function notify(message) {
     clearTimeout(noticeTimer.current);
     setNotice(message);
@@ -70,30 +74,37 @@ export default function Home() {
   }
 
   function changeItem(slot, id) {
-    setOutfit((current) => replaceSlot(current, slot, id));
+    setOutfit((current) => ({ ...current, [slot]: id }));
     notify(
       id ? "Your outfit has been updated." : "Item removed from your outfit.",
     );
   }
 
-  // Sonradan burada backend / AI sorğusunu qoşa bilərsən.
+  // Random outfit from the wardrobe for now. The AI call can go here later.
   function generate() {
     if (isGenerating) return;
+    if (wardrobe.length === 0) {
+      notify("Add some clothes to your wardrobe first.");
+      return;
+    }
     setIsGenerating(true);
-    // Local curated suggestions. Replace this with your backend / AI request.
     generateTimer.current = setTimeout(() => {
-      setOutfit((current) => {
-        const candidates = outfitPresets.filter(
-          (preset) => outfitKey(preset) !== outfitKey(current),
-        );
-        return { ...candidates[Math.floor(Math.random() * candidates.length)] };
-      });
+      const next = {};
+      for (const slot of SLOTS) {
+        const options = wardrobe.filter((item) => item.slot === slot);
+        const skip = OPTIONAL_SLOTS.includes(slot) && Math.random() < 0.4;
+        next[slot] =
+          options.length && !skip
+            ? options[Math.floor(Math.random() * options.length)].id
+            : null;
+      }
+      setOutfit(next);
       setIsGenerating(false);
       notify("A fresh combination, from your wardrobe.");
     }, 550);
   }
 
-  // Saxlanmış kombin və favorit vəziyyəti.
+  // Saved and favorite state for the current outfit
   const key = outfitKey(outfit);
   const isSaved = saved.some((entry) => entry.key === key);
   const isFavorite = favorites.includes(key);
@@ -125,7 +136,10 @@ export default function Home() {
   }
 
   const items = Object.fromEntries(
-    Object.entries(outfit).map(([slot, id]) => [slot, itemById[id] ?? null]),
+    Object.entries(outfit).map(([slot, id]) => [
+      slot,
+      wardrobe.find((item) => item.id === id) ?? null,
+    ]),
   );
 
   const date = new Intl.DateTimeFormat("en-US", {
@@ -141,7 +155,7 @@ export default function Home() {
         <Brand />
       </div>
 
-      {/* Salamlaşma və tarix */}
+      {/* Greeting and date */}
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-[25px] leading-tight font-semibold tracking-tight sm:text-[28px]">
@@ -154,11 +168,10 @@ export default function Home() {
         <time className="pt-1 text-[11px] text-muted">{date}</time>
       </header>
 
-      {/* Solda hava və izahlar, sağda kombin */}
+      {/* Weather on the left, outfit on the right */}
       <div className="grid items-stretch gap-5 min-[1150px]:grid-cols-[270px_minmax(0,1fr)] min-[1400px]:grid-cols-[290px_minmax(0,1fr)]">
         <div className="grid gap-5 sm:grid-cols-2 min-[1150px]:flex min-[1150px]:flex-col">
-          <WeatherCard />
-          <OutfitReasons hasLayer={Boolean(items.outerwear)} />
+          <WeatherCard hasLayer={Boolean(items.outerwear)} />
         </div>
 
         <OutfitPreview
@@ -173,17 +186,18 @@ export default function Home() {
         />
       </div>
 
-      {/* Hansı geyim dəyişirsə, seçim pəncərəsi onu açır */}
+      {/* Picker opens for whichever piece is being swapped */}
       {activeSlot && (
         <ItemPicker
           slot={activeSlot}
+          wardrobe={wardrobe}
           currentId={outfit[activeSlot]}
           onApply={changeItem}
           onClose={closePicker}
         />
       )}
 
-      {/* Əməliyyatdan sonra qısa bildiriş */}
+      {/* Short message after an action */}
       <div
         role="status"
         aria-live="polite"
@@ -202,117 +216,5 @@ export default function Home() {
         )}
       </div>
     </>
-  );
-}
-
-// Hava kartı — yalnız bu səhifədə istifadə olunur.
-const hours = [
-  { time: "12 PM", temperature: 19, icon: CloudSun },
-  { time: "3 PM", temperature: 20, icon: CloudSun },
-  { time: "6 PM", temperature: 17, icon: Cloud },
-];
-
-function WeatherSymbol({ compact = false }) {
-  return (
-    <span
-      className={`relative inline-flex shrink-0 items-center justify-center ${compact ? "size-9" : "size-[76px]"}`}
-      aria-hidden="true"
-    >
-      <Sun
-        className={`absolute text-[#f7bf48] ${compact ? "top-0 left-0 size-6" : "top-0 left-0 size-12"}`}
-        fill="#ffd475"
-        strokeWidth={1.5}
-      />
-      <Cloud
-        className={`absolute text-[#b7d3ef] drop-shadow-sm ${compact ? "right-0 bottom-0 size-8" : "right-0 bottom-1 size-16"}`}
-        fill="#e4effa"
-        strokeWidth={1.4}
-      />
-    </span>
-  );
-}
-
-function WeatherCard() {
-  return (
-    <section
-      aria-label="Baku weather, sample forecast"
-      className="rounded-[14px] border border-[#d6eaff] bg-[linear-gradient(145deg,#edf8ff,#dff1ff_50%,#f2faff)] p-5 xl:p-6"
-    >
-      <div className="flex items-center gap-2 text-sm font-semibold">
-        <MapPin
-          size={18}
-          fill="#5977a3"
-          strokeWidth={1.5}
-          className="text-[#5977a3]"
-        />
-        <span>Baku</span>
-        <span
-          title="Illustrative forecast; connect your weather service here"
-          className="ml-auto text-[9px] font-normal tracking-wide text-muted/80"
-        >
-          SAMPLE
-        </span>
-      </div>
-      <div className="mt-6 flex items-center gap-4">
-        <WeatherSymbol />
-        <div>
-          <p className="text-[34px] leading-none font-semibold tracking-tight">
-            18°C
-          </p>
-          <p className="mt-2 text-[13px]">Partly cloudy</p>
-          <p className="mt-2 text-xs text-muted">
-            H: 20° <span className="mx-2 text-[#b0c9e7]">·</span> L: 13°
-          </p>
-        </div>
-      </div>
-      <div className="mt-6 grid grid-cols-3 divide-x divide-[#cfe3f5] border-t border-[#cfe3f5] pt-4">
-        {hours.map(({ time, temperature, icon: Icon }) => (
-          <div key={time} className="flex flex-col items-center gap-2.5">
-            <span className="text-[11px] text-muted">{time}</span>
-            <Icon
-              size={26}
-              strokeWidth={1.5}
-              className="text-[#8cafce]"
-              aria-hidden="true"
-            />
-            <span className="text-sm font-semibold">{temperature}°</span>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// Kombinin qısa izahları.
-function OutfitReasons({ hasLayer }) {
-  const reasons = [
-    { icon: Cloud, text: "Comfortable for 18°C" },
-    { icon: Palette, text: "Matches your casual style" },
-    {
-      icon: Layers2,
-      text: hasLayer
-        ? "Easy layers for the evening"
-        : "A light look for a mild day",
-    },
-  ];
-  return (
-    <section
-      aria-labelledby="outfit-reasons-title"
-      className="flex-1 rounded-[14px] border border-line bg-white/90 p-5 xl:p-6"
-    >
-      <h2 id="outfit-reasons-title" className="text-base font-semibold">
-        Why this outfit?
-      </h2>
-      <ul className="mt-6 flex flex-col gap-6">
-        {reasons.map(({ icon: Icon, text }) => (
-          <li key={text} className="flex items-center gap-3.5">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#eaf4ff] text-brand">
-              <Icon size={21} strokeWidth={1.6} aria-hidden="true" />
-            </span>
-            <span className="text-[12px] leading-5 xl:text-[13px]">{text}</span>
-          </li>
-        ))}
-      </ul>
-    </section>
   );
 }

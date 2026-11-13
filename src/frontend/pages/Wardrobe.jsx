@@ -30,7 +30,7 @@ export default function Wardrobe() {
       const matchesCategory =
         activeCategory === "All" || item.category === activeCategory;
 
-      // boş seasons = bütün fəsillər
+      // no seasons picked means it works in any season
       const matchesSeason =
         season === "All" || seasons.length === 0 || seasons.includes(season);
 
@@ -42,7 +42,7 @@ export default function Wardrobe() {
     })
     .sort((a, b) => (sortBy === "Name" ? a.name.localeCompare(b.name) : 0));
 
-  // "Newest": sonradan əlavə olunan əvvəldə görünsün
+  // "Newest": show the latest added items first
   if (sortBy !== "Name") filteredClothes.reverse();
 
   return (
