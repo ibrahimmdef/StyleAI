@@ -89,7 +89,7 @@ function WeatherSection({ weather, failed, isFallback }) {
 
       <div className="mt-6 flex items-center gap-4">
         <MainIcon
-          className="size-[76px] shrink-0"
+          className="size-19 shrink-0"
           style={{ color }}
           strokeWidth={1.3}
           aria-hidden="true"

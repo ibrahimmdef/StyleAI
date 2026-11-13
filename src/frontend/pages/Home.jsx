@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 import { Brand } from "../components/Sidebar";
 import OutfitPreview from "../components/OutfitPreview";
 import ItemPicker from "../components/ItemPicker";
+import OutfitPrompt from "../components/OutfitPrompt";
 import WeatherCard, { loadWeather } from "../components/WeatherCard";
 import { fitsSeason, getSeason, needsLayer } from "../../shared/rules";
 import {
@@ -90,8 +91,9 @@ export default function Home() {
     );
   }
 
-  // Random outfit that fits today's season and temperature. The AI call can go here later.
-  function generate() {
+  // Random outfit that fits today's season and temperature.
+  // Pinned pieces always go in. `prompt` is for the AI later, it isn't used yet.
+  function generate(prompt, pinnedIds) {
     if (isGenerating) return;
     if (wardrobe.length === 0) {
       notify("Add some clothes to your wardrobe first.");
@@ -100,9 +102,17 @@ export default function Home() {
     setIsGenerating(true);
     generateTimer.current = setTimeout(() => {
       const season = getSeason();
+      const pinned = wardrobe.filter((item) => pinnedIds.includes(item.id));
       const next = {};
 
       for (const slot of SLOTS) {
+        // A pinned piece for this slot wins, no dice
+        const mustHave = pinned.filter((item) => item.slot === slot);
+        if (mustHave.length) {
+          next[slot] = mustHave[Math.floor(Math.random() * mustHave.length)].id;
+          continue;
+        }
+
         const all = wardrobe.filter((item) => item.slot === slot);
         const inSeason = all.filter((item) => fitsSeason(item, season));
         // Nothing for this season? Better something than an empty slot
@@ -204,9 +214,14 @@ export default function Home() {
           isGenerating={isGenerating}
           onFavorite={toggleFavorite}
           onSave={save}
-          onGenerate={generate}
           onSwap={setActiveSlot}
-        />
+        >
+          <OutfitPrompt
+            wardrobe={wardrobe}
+            isGenerating={isGenerating}
+            onSubmit={generate}
+          />
+        </OutfitPreview>
       </div>
 
       {/* Picker opens for whichever piece is being swapped */}

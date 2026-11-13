@@ -1,11 +1,4 @@
-import {
-  ArrowLeftRight,
-  Bookmark,
-  Check,
-  Heart,
-  Plus,
-  Sparkles,
-} from "lucide-react";
+import { ArrowLeftRight, Bookmark, Check, Heart, Plus } from "lucide-react";
 import { Button, IconButton } from "./Buttons";
 import { OPTIONAL_SLOTS, SLOTS, SLOT_LABELS } from "../data";
 
@@ -29,8 +22,8 @@ export default function OutfitPreview({
   isGenerating,
   onFavorite,
   onSave,
-  onGenerate,
   onSwap,
+  children,
 }) {
   const pieces = SLOTS.filter((slot) => items[slot]);
   const missing = OPTIONAL_SLOTS.filter((slot) => !items[slot]);
@@ -107,10 +100,10 @@ export default function OutfitPreview({
         </div>
       )}
 
+      {/* Whatever Home puts inside <OutfitPreview>...</OutfitPreview> shows up here */}
+      {children}
+
       <footer className="mt-5 flex flex-wrap items-center gap-3 border-t border-line pt-4">
-        <Button icon={Sparkles} onClick={onGenerate} disabled={isGenerating}>
-          {isGenerating ? "Styling your day…" : "Generate new outfit"}
-        </Button>
         <Button
           variant="secondary"
           icon={isSaved ? Check : Bookmark}
