@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 
 import itemsRoutes, { cleanUploads } from "./items.js";
+import outfitsRoutes from "./outfits.js";
 import replicateRoutes from "./replicate.js";
 import weatherRoutes from "./weather.js";
 
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
 app.use("/api", itemsRoutes);
+app.use("/api", outfitsRoutes);
 app.use("/api", replicateRoutes);
 app.use("/api", weatherRoutes);
 

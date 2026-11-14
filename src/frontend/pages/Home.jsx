@@ -14,8 +14,6 @@ import {
   defaultOutfitName,
   getSlot,
   outfitKey,
-  readFavorites,
-  readSaved,
   readStorage,
   writeStorage,
 } from "../data";
@@ -26,8 +24,7 @@ export default function Home() {
   const [weather, setWeather] = useState(null);
   const [weatherFailed, setWeatherFailed] = useState(false);
   const [outfit, setOutfit] = useState(() => readStorage(STORAGE.outfit, {}));
-  const [saved, setSaved] = useState(readSaved);
-  const [favorites, setFavorites] = useState(readFavorites);
+  const [saved, setSaved] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [notice, setNotice] = useState("");
   const [activeSlot, setActiveSlot] = useState(null);
@@ -55,6 +52,14 @@ export default function Home() {
         setWardrobe(data.map((item) => ({ ...item, slot: getSlot(item) }))),
       )
       .catch(() => notify("Could not load your wardrobe."));
+  }, []);
+
+  // Saved outfits, so we know if the one on screen is saved or a favorite
+  useEffect(() => {
+    fetch("http://localhost:5000/api/outfits")
+      .then((res) => res.json())
+      .then((data) => setSaved(data))
+      .catch(() => {});
   }, []);
 
   // Weather lives here (not in WeatherCard) because generate needs the temperature
@@ -120,47 +125,76 @@ export default function Home() {
     }, 550);
   }
 
-  // Saved and favorite state for the current outfit
+  // Is the outfit on screen already saved? Is it a favorite?
   const key = outfitKey(outfit);
-  const isSaved = saved.some((entry) => entry.key === key);
-  const isFavorite = favorites.includes(key);
+  const savedEntry = saved.find((entry) => entry.key === key);
+  const isSaved = Boolean(savedEntry);
+  const isFavorite = Boolean(savedEntry?.favorite);
+  const isEmpty = !Object.values(outfit).some(Boolean);
 
-  // Adds the current outfit to the saved list. Returns false if storage failed.
-  function addToSaved() {
-    const next = [
-      ...saved,
-      {
-        key,
-        name: defaultOutfitName(),
-        slots: outfit,
-        savedAt: new Date().toISOString(),
-      },
-    ];
-    if (!writeStorage(STORAGE.saved, next)) return false;
-    setSaved(next);
-    return true;
+  // Sends the outfit on screen to the backend. Returns the saved outfit, or null.
+  async function addToSaved(favorite) {
+    try {
+      const res = await fetch("http://localhost:5000/api/outfits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          key,
+          name: defaultOutfitName(),
+          slots: outfit,
+          favorite,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      const created = await res.json();
+      setSaved([...saved, created]);
+      return created;
+    } catch {
+      return null;
+    }
   }
 
-  function save() {
-    if (isSaved) {
-      notify("This outfit is already saved.");
+  async function save() {
+    if (isEmpty) return notify("Generate an outfit first.");
+    if (isSaved) return notify("This outfit is already saved.");
+
+    if (await addToSaved(false)) {
+      notify("Outfit saved. A little inspiration for later.");
+    } else {
+      notify("Could not save the outfit. Is the server running?");
+    }
+  }
+
+  async function toggleFavorite() {
+    if (isEmpty) return notify("Generate an outfit first.");
+
+    // Not saved yet: save it as a favorite, so it shows on the Outfits page
+    if (!savedEntry) {
+      if (await addToSaved(true)) notify("Added to favorites.");
+      else notify("Could not update favorites.");
       return;
     }
-    if (addToSaved()) notify("Outfit saved. A little inspiration for later.");
-    else notify("Could not save. Please allow browser storage and try again.");
-  }
 
-  function toggleFavorite() {
-    // A favorite should show up on the Outfits page, so save it too
-    if (!isFavorite && !isSaved) addToSaved();
-
-    const next = isFavorite
-      ? favorites.filter((value) => value !== key)
-      : [...favorites, key];
-    if (writeStorage(STORAGE.favorites, next)) {
-      setFavorites(next);
-      notify(isFavorite ? "Removed from favorites." : "Added to favorites.");
-    } else notify("Could not update favorites. Please allow browser storage.");
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/outfits/${savedEntry.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ favorite: !isFavorite }),
+        },
+      );
+      if (!res.ok) throw new Error();
+      const updated = await res.json();
+      setSaved(
+        saved.map((entry) => (entry.id === updated.id ? updated : entry)),
+      );
+      notify(
+        updated.favorite ? "Added to favorites." : "Removed from favorites.",
+      );
+    } catch {
+      notify("Could not update favorites.");
+    }
   }
 
   const items = Object.fromEntries(

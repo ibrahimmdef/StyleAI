@@ -14,7 +14,7 @@
   "type": "module",
   "nodemonConfig": {
     "watch": [".", "../shared"],
-    "ignore": ["items.json", "uploads/*"]
+    "ignore": ["items.json", "outfits.json", "uploads/*"]
   },
   "dependencies": {
     "@imgly/background-removal-node": "^1.4.5",

@@ -35,30 +35,15 @@ export function outfitKey(outfit) {
 }
 
 // localStorage keys in one place, so Home and Outfits can't mistype them
+// Only today's outfit stays in the browser. Saved outfits live on the backend.
 export const STORAGE = {
   outfit: "styleai.outfit.v1",
-  saved: "styleai.saved.v1",
-  favorites: "styleai.favorites.v1",
 };
-
-// Saved outfits: [{ key, slots, savedAt }]. Broken entries are skipped.
-export function readSaved() {
-  const value = readStorage(STORAGE.saved, []);
-  if (!Array.isArray(value)) return [];
-  return value.filter((entry) => typeof entry?.key === "string" && entry.slots);
-}
 
 // A name to start with, like "Friday autumn look". It can be renamed later.
 export function defaultOutfitName(date = new Date()) {
   const day = date.toLocaleDateString("en-US", { weekday: "long" });
   return `${day} ${getSeason(date).toLowerCase()} look`;
-}
-
-// Favorites are a list of outfit keys
-export function readFavorites() {
-  const value = readStorage(STORAGE.favorites, []);
-  if (!Array.isArray(value)) return [];
-  return value.filter((key) => typeof key === "string");
 }
 
 export function readStorage(key, fallback) {

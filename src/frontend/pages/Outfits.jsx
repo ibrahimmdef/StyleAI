@@ -1,13 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { EllipsisVertical, Heart, Pencil, Shirt, Trash2 } from "lucide-react";
-import {
-  SLOTS,
-  STORAGE,
-  readFavorites,
-  readSaved,
-  writeStorage,
-} from "../data";
+import { SLOTS, STORAGE, writeStorage } from "../data";
+
+const API = "http://localhost:5000/api/outfits";
 
 const TABS = ["All outfits", "Favorites"];
 
@@ -21,8 +17,7 @@ const menuItem = "flex w-full items-center gap-2 px-3 py-2 text-left";
 export default function Outfits() {
   const navigate = useNavigate();
   const [wardrobe, setWardrobe] = useState([]);
-  const [saved, setSaved] = useState(readSaved);
-  const [favorites, setFavorites] = useState(readFavorites);
+  const [saved, setSaved] = useState([]);
   const [tab, setTab] = useState("All outfits");
 
   // Outfits only store item ids, the photos come from the wardrobe
@@ -32,38 +27,41 @@ export default function Outfits() {
       .then((data) => setWardrobe(data));
   }, []);
 
+  useEffect(() => {
+    fetch(API)
+      .then((res) => res.json())
+      .then((data) => setSaved(data));
+  }, []);
+
   // Newest first. The Favorites tab only shows favorites.
   const shown = saved
-    .filter((entry) => tab === "All outfits" || favorites.includes(entry.key))
+    .filter((entry) => tab === "All outfits" || entry.favorite)
     .reverse();
 
-  function toggleFavorite(key) {
-    const next = favorites.includes(key)
-      ? favorites.filter((k) => k !== key)
-      : [...favorites, key];
-    writeStorage(STORAGE.favorites, next);
-    setFavorites(next);
+  // Favorite and rename both change one outfit, so they share this
+  async function updateOutfit(id, changes) {
+    const res = await fetch(`${API}/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(changes),
+    });
+    if (!res.ok) {
+      alert("Could not update the outfit.");
+      return;
+    }
+    const updated = await res.json();
+    setSaved(saved.map((entry) => (entry.id === id ? updated : entry)));
   }
 
-  function deleteOutfit(key) {
+  async function deleteOutfit(id) {
     if (!confirm("Delete this outfit?")) return;
 
-    const nextSaved = saved.filter((entry) => entry.key !== key);
-    writeStorage(STORAGE.saved, nextSaved);
-    setSaved(nextSaved);
-
-    // A deleted outfit can't stay a favorite
-    const nextFavorites = favorites.filter((k) => k !== key);
-    writeStorage(STORAGE.favorites, nextFavorites);
-    setFavorites(nextFavorites);
-  }
-
-  function renameOutfit(key, name) {
-    const next = saved.map((entry) =>
-      entry.key === key ? { ...entry, name } : entry,
-    );
-    writeStorage(STORAGE.saved, next);
-    setSaved(next);
+    const res = await fetch(`${API}/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      alert("Could not delete the outfit.");
+      return;
+    }
+    setSaved(saved.filter((entry) => entry.id !== id));
   }
 
   // Make it today's outfit and go to Home
@@ -114,14 +112,16 @@ export default function Outfits() {
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {shown.map((entry) => (
             <OutfitCard
-              key={entry.key}
+              key={entry.id}
               entry={entry}
               wardrobe={wardrobe}
-              isFavorite={favorites.includes(entry.key)}
-              onFavorite={() => toggleFavorite(entry.key)}
+              isFavorite={entry.favorite}
+              onFavorite={() =>
+                updateOutfit(entry.id, { favorite: !entry.favorite })
+              }
               onWear={() => wear(entry)}
-              onRename={(name) => renameOutfit(entry.key, name)}
-              onDelete={() => deleteOutfit(entry.key)}
+              onRename={(name) => updateOutfit(entry.id, { name })}
+              onDelete={() => deleteOutfit(entry.id)}
             />
           ))}
         </div>
