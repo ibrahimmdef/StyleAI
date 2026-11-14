@@ -1,5 +1,5 @@
-import { CATEGORIES } from "../shared/catalog.js";
-import { getSeason } from "../shared/rules.js";
+import { CATEGORIES, SEASONS, STYLES } from "../shared/catalog.js";
+import { fitsSeason, getSeason } from "../shared/rules.js";
 
 // Places in an outfit. The order also matters for outfitKey.
 export const SLOTS = [
@@ -32,6 +32,24 @@ export function getSlot(item) {
 // Turns an outfit into a string so two outfits are easy to compare: "12|34|-|56|-|-"
 export function outfitKey(outfit) {
   return SLOTS.map((slot) => outfit[slot] ?? "-").join("|");
+}
+
+// Tags for an outfit: its occasion, styles every piece shares, seasons every piece fits
+export function outfitTags(pieces, occasion) {
+  if (pieces.length === 0) return occasion ? [occasion] : [];
+  const styles = STYLES.filter((style) =>
+    pieces.every((item) => item.styles?.includes(style)),
+  );
+  const seasons = SEASONS.filter((season) =>
+    pieces.every((item) => fitsSeason(item, season)),
+  );
+  // Fits every season? Then the season says nothing, leave it out.
+  const tags = [
+    occasion,
+    ...styles,
+    ...(seasons.length === SEASONS.length ? [] : seasons),
+  ];
+  return [...new Set(tags.filter(Boolean))].slice(0, 3);
 }
 
 // localStorage keys in one place, so Home and Outfits can't mistype them

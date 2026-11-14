@@ -1,70 +1,34 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import {
-  ArrowLeft,
-  Bookmark,
-  ChevronRight,
-  Heart,
-  Pencil,
-  Plus,
-  Shirt,
-  Sparkles,
-} from "lucide-react";
+import { ArrowLeft, ChevronRight, Heart, Pencil, Sparkles } from "lucide-react";
 import { Button } from "../components/Buttons";
 import OutfitCanvas from "../components/OutfitCanvas";
-import { SEASONS, STYLES } from "../../shared/catalog";
-import { fitsSeason } from "../../shared/rules";
-import {
-  OPTIONAL_SLOTS,
-  SLOTS,
-  SLOT_LABELS,
-  STORAGE,
-  defaultOutfitName,
-  getSlot,
-  outfitKey,
-  writeStorage,
-} from "../data";
+import { SLOTS, STORAGE, getSlot, outfitTags, writeStorage } from "../data";
 
 const API = "http://localhost:5000/api/outfits";
-
-const EMPTY = {
-  top: null,
-  bottom: null,
-  outerwear: null,
-  shoes: null,
-  bag: null,
-  accessory: null,
-};
 
 const card = "rounded-2xl border border-line bg-white p-4 sm:p-6";
 const tag = "rounded-full bg-selected px-3 py-1 text-xs text-muted";
 
-// Styles every piece shares, and seasons every piece fits
-function outfitTags(pieces) {
-  if (pieces.length === 0) return [];
-  const styles = STYLES.filter((style) =>
-    pieces.every((item) => item.styles?.includes(style)),
+// A short line under the tags, made from the pieces
+function describe(pieces) {
+  if (pieces.length === 0) return "This outfit has no pieces left.";
+  // Most used colors first
+  const count = (color) => pieces.filter((item) => item.color === color).length;
+  const colors = [...new Set(pieces.map((item) => item.color))].sort(
+    (a, b) => count(b) - count(a),
   );
-  const seasons = SEASONS.filter((season) =>
-    pieces.every((item) => fitsSeason(item, season)),
-  );
-  // Fits every season? Then the season says nothing, leave it out.
-  return seasons.length === SEASONS.length ? styles : [...styles, ...seasons];
+  const main = colors.slice(0, 2).join(" and ").toLowerCase();
+  return `${pieces.length} pieces from your wardrobe, mostly ${main}. Tap a piece to see or edit it.`;
 }
 
-// One page, three jobs: /outfits/new builds an outfit, /outfits/:id shows one,
-// and the Edit button turns the shown one into the builder.
+// One saved outfit: the picture, its pieces, wear it or edit it
 export default function OutfitDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [wardrobe, setWardrobe] = useState([]);
   const [outfit, setOutfit] = useState(null);
-  const [slots, setSlots] = useState(EMPTY);
-  const [name, setName] = useState(defaultOutfitName());
-  const [isEditing, setIsEditing] = useState(!id);
-  const [activeSlot, setActiveSlot] = useState(null);
   const [error, setError] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:5000/api/Items")
@@ -75,53 +39,28 @@ export default function OutfitDetails() {
       .catch(() => setError("Could not load your wardrobe."));
   }, []);
 
-  // Opening a saved outfit: fill the page with it
   useEffect(() => {
-    if (!id) return;
     fetch(API)
       .then((res) => res.json())
       .then((data) => {
         const found = data.find((entry) => entry.id === Number(id));
-        if (!found) {
-          setError("Outfit not found.");
-          return;
-        }
-        setOutfit(found);
-        setSlots({ ...EMPTY, ...found.slots });
-        setName(found.name || "Untitled outfit");
+        if (found) setOutfit(found);
+        else setError("Outfit not found.");
       })
       .catch(() => setError("Could not load the outfit."));
   }, [id]);
 
+  if (!outfit) {
+    return <p className="py-24 text-center text-sm text-muted">{error}</p>;
+  }
+
   // Item for each place, null when it's empty or the piece was deleted
   const items = {};
   for (const slot of SLOTS) {
-    items[slot] = wardrobe.find((item) => item.id === slots[slot]) ?? null;
+    items[slot] =
+      wardrobe.find((item) => item.id === outfit.slots[slot]) ?? null;
   }
   const pieces = SLOTS.map((slot) => items[slot]).filter(Boolean);
-  const options = wardrobe.filter((item) => item.slot === activeSlot);
-
-  // While editing every place is listed, empty ones too
-  const rows = isEditing ? SLOTS : SLOTS.filter((slot) => items[slot]);
-
-  // Tapping the piece that's already in clears the place
-  function pick(itemId) {
-    setSlots({
-      ...slots,
-      [activeSlot]: slots[activeSlot] === itemId ? null : itemId,
-    });
-    setActiveSlot(null);
-    setError("");
-  }
-
-  function cancel() {
-    if (!outfit) return navigate("/outfits");
-    setSlots({ ...EMPTY, ...outfit.slots });
-    setName(outfit.name || "Untitled outfit");
-    setIsEditing(false);
-    setActiveSlot(null);
-    setError("");
-  }
 
   async function toggleFavorite() {
     const res = await fetch(`${API}/${outfit.id}`, {
@@ -133,50 +72,12 @@ export default function OutfitDetails() {
   }
 
   function wear() {
-    writeStorage(STORAGE.outfit, slots);
+    writeStorage(STORAGE.outfit, outfit.slots);
     navigate("/");
   }
 
-  async function save() {
-    const missing = SLOTS.filter(
-      (slot) => !OPTIONAL_SLOTS.includes(slot) && !slots[slot],
-    );
-    if (missing.length) {
-      setError(
-        `Pick ${missing.map((slot) => SLOT_LABELS[slot]).join(", ")} first.`,
-      );
-      return;
-    }
-    if (!name.trim()) {
-      setError("Give your outfit a name.");
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      // New outfit: POST. Saved one: PATCH only the parts that can change.
-      const res = await fetch(outfit ? `${API}/${outfit.id}` : API, {
-        method: outfit ? "PATCH" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          key: outfitKey(slots),
-          name: name.trim(),
-          slots,
-          favorite: outfit ? undefined : false,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
-      setOutfit(data);
-      setIsEditing(false);
-      setError("");
-      if (!outfit) navigate(`/outfits/${data.id}`, { replace: true });
-    } catch (err) {
-      setError(err.message || "Could not save the outfit.");
-    } finally {
-      setIsSaving(false);
-    }
+  function edit() {
+    navigate(`/outfits/${outfit.id}/edit`);
   }
 
   return (
@@ -190,224 +91,80 @@ export default function OutfitDetails() {
       </Link>
 
       <div className="mt-3 flex items-center gap-3">
-        {isEditing ? (
-          // Looks like the title, but you can type in it
-          <label className="flex min-w-0 flex-1 items-center gap-2">
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Outfit name"
-              className="min-w-0 flex-1 rounded-lg bg-transparent text-3xl font-bold tracking-tight outline-none focus:bg-selected/50"
-            />
-            <Pencil size={18} className="shrink-0 text-muted" />
-          </label>
-        ) : (
-          <h1 className="truncate text-3xl font-bold tracking-tight">{name}</h1>
-        )}
-
-        {outfit && !isEditing && (
-          <>
-            <button
-              type="button"
-              onClick={toggleFavorite}
-              aria-label="Favorite"
-              className="rounded-full border border-line p-1.5 text-brand hover:bg-selected"
-            >
-              <Heart
-                size={16}
-                className={outfit.favorite ? "fill-current" : ""}
-              />
-            </button>
-            <Button
-              variant="secondary"
-              icon={Pencil}
-              onClick={() => setIsEditing(true)}
-              className="ml-auto max-sm:hidden"
-            >
-              Edit outfit
-            </Button>
-          </>
-        )}
+        <h1 className="truncate text-3xl font-bold tracking-tight">
+          {outfit.name || "Untitled outfit"}
+        </h1>
+        <button
+          type="button"
+          onClick={toggleFavorite}
+          aria-label="Favorite"
+          className="rounded-full border border-line p-1.5 text-brand hover:bg-selected"
+        >
+          <Heart size={16} className={outfit.favorite ? "fill-current" : ""} />
+        </button>
+        <Button
+          variant="secondary"
+          icon={Pencil}
+          onClick={edit}
+          className="ml-auto max-sm:hidden"
+        >
+          Edit outfit
+        </Button>
       </div>
 
       <div className="mt-6 grid gap-5 lg:grid-cols-2">
-        {/* The outfit as a picture */}
         <section className={card}>
-          {pieces.length === 0 ? (
-            // Same height as the picture, so the page doesn't jump
-            <div className="flex h-96 flex-col items-center justify-center gap-3 rounded-xl bg-canvas/60 text-center sm:h-120">
-              <Shirt size={36} strokeWidth={1.3} className="text-brand" />
-              <p className="text-sm text-muted">
-                Pick pieces on the right to see your outfit here.
-              </p>
-            </div>
-          ) : (
-            <OutfitCanvas items={items} />
-          )}
+          <OutfitCanvas items={items} />
         </section>
 
         <section className={`${card} flex flex-col`}>
-          {activeSlot ? (
-            // Choosing a piece for one place
-            <>
-              <button
-                type="button"
-                onClick={() => setActiveSlot(null)}
-                className="inline-flex items-center gap-2 self-start text-lg font-semibold capitalize"
+          <div className="flex flex-wrap items-center gap-2">
+            {outfitTags(pieces, outfit.occasion).map((name) => (
+              <span key={name} className={tag}>
+                {name}
+              </span>
+            ))}
+            <span className={`${tag} ml-auto`}>{pieces.length} pieces</span>
+          </div>
+
+          <p className="mt-4 text-sm leading-6 text-muted">
+            {describe(pieces)}
+          </p>
+
+          {/* flex-1 + auto-rows-fr: the rows share the card's height, no empty gap */}
+          <div className="mt-5 grid flex-1 auto-rows-fr gap-3 sm:grid-cols-2">
+            {pieces.map((item) => (
+              <Link
+                key={item.id}
+                to={`/wardrobe/${item.id}/edit`}
+                className="flex items-center gap-3 rounded-xl border border-line p-2 transition hover:border-brand/40"
               >
-                <ArrowLeft size={18} className="text-brand" />
-                Choose {SLOT_LABELS[activeSlot]}
-              </button>
-
-              {options.length === 0 ? (
-                <p className="py-16 text-center text-sm text-muted">
-                  No {SLOT_LABELS[activeSlot]} in your wardrobe yet.{" "}
-                  <Link to="/wardrobe/new" className="font-medium text-brand">
-                    Add one
-                  </Link>
-                </p>
-              ) : (
-                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  {options.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => pick(item.id)}
-                      className={`rounded-xl border p-2 text-left transition ${
-                        slots[activeSlot] === item.id
-                          ? "border-brand bg-selected"
-                          : "border-line hover:border-brand/40"
-                      }`}
-                    >
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="aspect-square w-full object-contain"
-                      />
-                      <p className="mt-2 truncate text-sm font-medium">
-                        {item.name}
-                      </p>
-                      <p className="text-xs text-muted">{item.type}</p>
-                    </button>
-                  ))}
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="size-12 rounded-lg bg-canvas object-contain p-1"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{item.name}</p>
+                  <p className="truncate text-xs text-muted">
+                    {item.category} · {item.color}
+                  </p>
                 </div>
-              )}
-            </>
-          ) : (
-            // Tags and the list of pieces
-            <>
-              <div className="flex flex-wrap items-center gap-2">
-                {outfitTags(pieces).map((name) => (
-                  <span key={name} className={tag}>
-                    {name}
-                  </span>
-                ))}
-                <span className={`${tag} ml-auto`}>{pieces.length} pieces</span>
-              </div>
+                <ChevronRight size={16} className="shrink-0 text-muted" />
+              </Link>
+            ))}
+          </div>
 
-              {isEditing && (
-                <p className="mt-4 text-sm text-muted">
-                  Tap a place to pick a piece from your wardrobe. Top, bottoms
-                  and shoes are needed, the rest is up to you.
-                </p>
-              )}
-
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                {rows.map((slot) => (
-                  <PieceRow
-                    key={slot}
-                    slot={slot}
-                    item={items[slot]}
-                    isEditing={isEditing}
-                    onPick={() => setActiveSlot(slot)}
-                  />
-                ))}
-              </div>
-
-              {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-
-              {/* mt-auto keeps the buttons at the bottom of the card */}
-              <div className="mt-auto grid grid-cols-2 gap-3 pt-6">
-                {isEditing ? (
-                  <>
-                    <Button icon={Bookmark} onClick={save} disabled={isSaving}>
-                      {isSaving ? "Saving…" : "Save outfit"}
-                    </Button>
-                    <Button variant="secondary" onClick={cancel}>
-                      Cancel
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button icon={Sparkles} onClick={wear}>
-                      Wear this outfit
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      icon={Pencil}
-                      onClick={() => setIsEditing(true)}
-                    >
-                      Edit outfit
-                    </Button>
-                  </>
-                )}
-              </div>
-            </>
-          )}
+          <div className="grid grid-cols-2 gap-3 pt-6">
+            <Button icon={Sparkles} onClick={wear}>
+              Wear this outfit
+            </Button>
+            <Button variant="secondary" icon={Pencil} onClick={edit}>
+              Edit outfit
+            </Button>
+          </div>
         </section>
       </div>
     </div>
-  );
-}
-
-// One place in the outfit. Viewing: links to the piece. Editing: opens the picker.
-function PieceRow({ slot, item, isEditing, onPick }) {
-  const row =
-    "flex items-center gap-3 rounded-xl border p-2 text-left transition hover:border-brand/40";
-
-  if (!item) {
-    return (
-      <button type="button" onClick={onPick} className={`${row} border-line`}>
-        <span className="grid size-12 shrink-0 place-items-center rounded-lg bg-canvas text-brand">
-          <Plus size={18} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-brand capitalize">
-            Add {SLOT_LABELS[slot]}
-          </p>
-          <p className="text-xs text-muted">
-            {OPTIONAL_SLOTS.includes(slot) ? "Optional" : "Needed"}
-          </p>
-        </div>
-        <ChevronRight size={16} className="shrink-0 text-muted" />
-      </button>
-    );
-  }
-
-  const content = (
-    <>
-      <img
-        src={item.image}
-        alt={item.name}
-        className="size-12 rounded-lg bg-canvas object-contain p-1"
-      />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{item.name}</p>
-        <p className="truncate text-xs text-muted">
-          {item.category} · {item.color}
-        </p>
-      </div>
-      <ChevronRight size={16} className="shrink-0 text-muted" />
-    </>
-  );
-
-  return isEditing ? (
-    <button type="button" onClick={onPick} className={`${row} border-line`}>
-      {content}
-    </button>
-  ) : (
-    <Link to={`/wardrobe/${item.id}/edit`} className={`${row} border-line`}>
-      {content}
-    </Link>
   );
 }

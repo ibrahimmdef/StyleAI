@@ -1,15 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  EllipsisVertical,
-  Heart,
-  Pencil,
-  Plus,
-  Shirt,
-  Trash2,
-} from "lucide-react";
+import { Ellipsis, Heart, Pencil, Plus, Shirt, Trash2 } from "lucide-react";
 import { Button } from "../components/Buttons";
-import { SLOTS, STORAGE, writeStorage } from "../data";
+import { SLOTS, STORAGE, outfitTags, writeStorage } from "../data";
 import { SEASONS } from "../../shared/catalog";
 import { fitsSeason } from "../../shared/rules";
 
@@ -18,17 +11,22 @@ const API = "http://localhost:5000/api/outfits";
 const TABS = ["All outfits", "Favorites"];
 const SEASON_FILTERS = ["All", ...SEASONS];
 
-const dateFormat = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-});
-
 const menuItem = "flex w-full items-center gap-2 px-3 py-2 text-left";
+const tag = "rounded-full bg-selected/60 px-3 py-1 text-xs text-muted";
 
-// Same pill for both filter rows, filled when picked
-function pill(active) {
-  return `rounded-full px-4 py-2 text-sm transition ${
-    active ? "bg-brand text-white" : "text-muted hover:bg-selected"
+// Big tabs: All outfits / Favorites
+function tabClass(active) {
+  return `rounded-xl px-10 py-2.5 text-sm transition ${
+    active ? "bg-brand text-white" : "bg-selected text-muted hover:text-brand"
+  }`;
+}
+
+// Small season pills
+function seasonClass(active) {
+  return `rounded-full px-5 py-1.5 text-sm transition ${
+    active
+      ? "bg-brand/15 text-brand"
+      : "bg-selected/60 text-muted hover:text-brand"
   }`;
 }
 
@@ -100,16 +98,16 @@ export default function Outfits() {
   }
 
   return (
-    <div className="min-h-[70vh] rounded-2xl border border-line bg-white p-6">
+    <div>
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">My Outfits</h1>
           <p className="mt-1 text-sm text-muted">
-            Your saved and favorite looks.
+            Your saved and generated outfits.
           </p>
         </div>
         <Button icon={Plus} onClick={() => navigate("/outfits/new")}>
-          Build your outfit
+          Create outfit
         </Button>
       </header>
 
@@ -121,7 +119,7 @@ export default function Outfits() {
               key={name}
               type="button"
               onClick={() => setTab(name)}
-              className={pill(tab === name)}
+              className={tabClass(tab === name)}
             >
               {name}
             </button>
@@ -134,7 +132,7 @@ export default function Outfits() {
               key={name}
               type="button"
               onClick={() => setSeason(name)}
-              className={pill(season === name)}
+              className={seasonClass(season === name)}
             >
               {name}
             </button>
@@ -157,7 +155,7 @@ export default function Outfits() {
           </Link>
         </div>
       ) : (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {shown.map((entry) => (
             <OutfitCard
               key={entry.id}
@@ -214,13 +212,30 @@ function OutfitCard({
   return (
     <article
       onMouseLeave={() => setMenuOpen(false)}
-      className="relative rounded-2xl border border-line bg-white p-3"
+      className="relative rounded-2xl border border-line bg-white p-4"
     >
+      {/* Heart and menu sit on top of the picture */}
+      <div className="absolute top-3 right-3 z-10 flex gap-1">
+        <button
+          type="button"
+          onClick={onFavorite}
+          aria-label="Favorite"
+          className="rounded-full p-1.5 text-brand hover:bg-selected"
+        >
+          <Heart size={18} className={isFavorite ? "fill-current" : ""} />
+        </button>
+        <button
+          type="button"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Outfit options"
+          className="rounded-full p-1.5 text-brand hover:bg-selected"
+        >
+          <Ellipsis size={18} />
+        </button>
+      </div>
+
       {/* Tapping the picture opens the outfit */}
-      <Link
-        to={`/outfits/${entry.id}`}
-        className="flex h-48 gap-2 rounded-xl bg-canvas/60 p-3 transition hover:bg-canvas"
-      >
+      <Link to={`/outfits/${entry.id}`} className="flex h-60 gap-3 px-2 pt-6">
         {columns.map((column) => (
           <div
             key={column[0].id}
@@ -238,52 +253,36 @@ function OutfitCard({
         ))}
       </Link>
 
-      <div className="mt-3 flex items-center gap-1">
-        <div className="mr-auto min-w-0">
-          {renaming ? (
-            <input
-              autoFocus
-              defaultValue={name}
-              onBlur={(e) => finishRename(e.target.value)}
-              // Enter saves, Escape puts the old name back
-              onKeyDown={(e) => {
-                if (e.key === "Enter") e.target.blur();
-                if (e.key === "Escape") {
-                  e.target.value = name;
-                  e.target.blur();
-                }
-              }}
-              className="w-full rounded-md border border-brand/40 px-1.5 py-0.5 text-sm font-medium outline-none"
-            />
-          ) : (
-            <p className="truncate text-sm font-medium">{name}</p>
-          )}
-          <p className="text-xs text-muted">
-            {entry.savedAt &&
-              `${dateFormat.format(new Date(entry.savedAt))} · `}
-            {pieces.length} pieces
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onFavorite}
-          aria-label="Favorite"
-          className="rounded-full p-1.5 text-brand hover:bg-selected"
-        >
-          <Heart size={16} className={isFavorite ? "fill-current" : ""} />
-        </button>
-        <button
-          type="button"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Outfit options"
-          className="rounded-full p-1.5 text-muted hover:bg-selected hover:text-brand"
-        >
-          <EllipsisVertical size={16} />
-        </button>
+      <div className="mt-4">
+        {renaming ? (
+          <input
+            autoFocus
+            defaultValue={name}
+            onBlur={(e) => finishRename(e.target.value)}
+            // Enter saves, Escape puts the old name back
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.target.blur();
+              if (e.key === "Escape") {
+                e.target.value = name;
+                e.target.blur();
+              }
+            }}
+            className="w-full rounded-md border border-brand/40 px-1.5 py-0.5 text-sm font-medium outline-none"
+          />
+        ) : (
+          <p className="truncate font-semibold">{name}</p>
+        )}
+      </div>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {outfitTags(pieces, entry.occasion).map((name) => (
+          <span key={name} className={tag}>
+            {name}
+          </span>
+        ))}
       </div>
 
       {menuOpen && (
-        <div className="absolute right-3 bottom-14 z-10 w-36 rounded-xl border border-line bg-white py-1 text-sm shadow-lg">
+        <div className="absolute top-12 right-3 z-20 w-36 rounded-xl border border-line bg-white py-1 text-sm shadow-lg">
           <button
             type="button"
             onClick={onWear}

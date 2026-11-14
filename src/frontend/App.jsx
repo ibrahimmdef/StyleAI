@@ -7,6 +7,7 @@ import Wardrobe from "./pages/Wardrobe";
 import AddItem from "./pages/AddItem";
 import Outfits from "./pages/Outfits";
 import OutfitDetails from "./pages/OutfitDetails";
+import BuildOutfit from "./pages/BuildOutfit";
 
 export default function App() {
   return (
@@ -17,8 +18,9 @@ export default function App() {
         <Route path="/wardrobe/new" element={<AddItem />} />
         <Route path="/wardrobe/:id/edit" element={<AddItem />} />
         <Route path="outfits" element={<Outfits />} />
-        <Route path="/outfits/new" element={<OutfitDetails />} />
+        <Route path="/outfits/new" element={<BuildOutfit />} />
         <Route path="/outfits/:id" element={<OutfitDetails />} />
+        <Route path="/outfits/:id/edit" element={<BuildOutfit />} />
         <Route
           path="preferences"
           element={<PlaceholderPage title="Style & Preferences" />}

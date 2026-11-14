@@ -44,6 +44,9 @@ export const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
 
 export const STYLES = ["Casual", "Smart casual", "Minimal", "Sporty"];
 
+// What an outfit is for
+export const OCCASIONS = ["Casual", "Work", "Evening", "Sport"];
+
 // Checks an item before it's saved. Returns an error message, or null if it's fine.
 export function checkItem(item) {
   const category = CATEGORIES[item.category];

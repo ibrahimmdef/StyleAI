@@ -1,10 +1,11 @@
 import { Router } from "express";
 import fs from "fs";
+import { OCCASIONS } from "../shared/catalog.js";
 
 const router = Router();
 const DATA_FILE = "outfits.json";
 
-// Saved outfit: { id, key, name, slots, favorite, savedAt }
+// Saved outfit: { id, key, name, occasion, slots, favorite, savedAt }
 // slots is { top: itemId, bottom: itemId, ... }, key is that same outfit as text
 
 function readOutfits() {
@@ -21,13 +22,16 @@ router.get("/outfits", (req, res) => {
 });
 
 router.post("/outfits", (req, res) => {
-  const { key, name, slots, favorite } = req.body;
+  const { key, name, occasion, slots, favorite } = req.body;
 
   if (typeof key !== "string" || !slots || typeof slots !== "object") {
     return res.status(400).json({ message: "Outfit is missing" });
   }
   if (typeof name !== "string" || !name.trim()) {
     return res.status(400).json({ message: "Name is required" });
+  }
+  if (occasion !== undefined && !OCCASIONS.includes(occasion)) {
+    return res.status(400).json({ message: "Unknown occasion" });
   }
 
   const outfits = readOutfits();
@@ -40,6 +44,7 @@ router.post("/outfits", (req, res) => {
     id: Date.now(),
     key,
     name: name.trim(),
+    occasion: occasion ?? "Casual",
     slots,
     favorite: Boolean(favorite),
     savedAt: new Date().toISOString(),
@@ -50,7 +55,7 @@ router.post("/outfits", (req, res) => {
   res.status(201).json(newOutfit);
 });
 
-// Name, favorite and the pieces can change. Send only what changed.
+// Name, occasion, favorite and the pieces can change. Send only what changed.
 router.patch("/outfits/:id", (req, res) => {
   const outfits = readOutfits();
   const outfit = outfits.find((outfit) => outfit.id === Number(req.params.id));
@@ -58,7 +63,7 @@ router.patch("/outfits/:id", (req, res) => {
     return res.status(404).json({ message: "Outfit not found" });
   }
 
-  const { name, favorite, slots, key } = req.body;
+  const { name, occasion, favorite, slots, key } = req.body;
   if (slots !== undefined) {
     if (typeof key !== "string" || !slots || typeof slots !== "object") {
       return res.status(400).json({ message: "Outfit is missing" });
@@ -75,6 +80,12 @@ router.patch("/outfits/:id", (req, res) => {
       return res.status(400).json({ message: "Name can't be empty" });
     }
     outfit.name = name.trim();
+  }
+  if (occasion !== undefined) {
+    if (!OCCASIONS.includes(occasion)) {
+      return res.status(400).json({ message: "Unknown occasion" });
+    }
+    outfit.occasion = occasion;
   }
   if (favorite !== undefined) {
     outfit.favorite = Boolean(favorite);
