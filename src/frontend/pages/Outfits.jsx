@@ -216,7 +216,11 @@ function OutfitCard({
       onMouseLeave={() => setMenuOpen(false)}
       className="relative rounded-2xl border border-line bg-white p-3"
     >
-      <div className="flex h-48 gap-2 rounded-xl bg-canvas/60 p-3">
+      {/* Tapping the picture opens the outfit */}
+      <Link
+        to={`/outfits/${entry.id}`}
+        className="flex h-48 gap-2 rounded-xl bg-canvas/60 p-3 transition hover:bg-canvas"
+      >
         {columns.map((column) => (
           <div
             key={column[0].id}
@@ -232,7 +236,7 @@ function OutfitCard({
             ))}
           </div>
         ))}
-      </div>
+      </Link>
 
       <div className="mt-3 flex items-center gap-1">
         <div className="mr-auto min-w-0">

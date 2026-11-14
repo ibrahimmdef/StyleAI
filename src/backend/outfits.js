@@ -50,7 +50,7 @@ router.post("/outfits", (req, res) => {
   res.status(201).json(newOutfit);
 });
 
-// Only the name and the favorite flag can change. The pieces stay the same.
+// Name, favorite and the pieces can change. Send only what changed.
 router.patch("/outfits/:id", (req, res) => {
   const outfits = readOutfits();
   const outfit = outfits.find((outfit) => outfit.id === Number(req.params.id));
@@ -58,7 +58,18 @@ router.patch("/outfits/:id", (req, res) => {
     return res.status(404).json({ message: "Outfit not found" });
   }
 
-  const { name, favorite } = req.body;
+  const { name, favorite, slots, key } = req.body;
+  if (slots !== undefined) {
+    if (typeof key !== "string" || !slots || typeof slots !== "object") {
+      return res.status(400).json({ message: "Outfit is missing" });
+    }
+    // Don't end up with the same outfit saved twice
+    if (outfits.some((other) => other.key === key && other.id !== outfit.id)) {
+      return res.status(400).json({ message: "This outfit is already saved" });
+    }
+    outfit.slots = slots;
+    outfit.key = key;
+  }
   if (name !== undefined) {
     if (typeof name !== "string" || !name.trim()) {
       return res.status(400).json({ message: "Name can't be empty" });
