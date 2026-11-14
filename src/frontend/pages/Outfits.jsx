@@ -1,11 +1,22 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { EllipsisVertical, Heart, Pencil, Shirt, Trash2 } from "lucide-react";
+import {
+  EllipsisVertical,
+  Heart,
+  Pencil,
+  Plus,
+  Shirt,
+  Trash2,
+} from "lucide-react";
+import { Button } from "../components/Buttons";
 import { SLOTS, STORAGE, writeStorage } from "../data";
+import { SEASONS } from "../../shared/catalog";
+import { fitsSeason } from "../../shared/rules";
 
 const API = "http://localhost:5000/api/outfits";
 
 const TABS = ["All outfits", "Favorites"];
+const SEASON_FILTERS = ["All", ...SEASONS];
 
 const dateFormat = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -14,11 +25,28 @@ const dateFormat = new Intl.DateTimeFormat("en-US", {
 
 const menuItem = "flex w-full items-center gap-2 px-3 py-2 text-left";
 
+// Same pill for both filter rows, filled when picked
+function pill(active) {
+  return `rounded-full px-4 py-2 text-sm transition ${
+    active ? "bg-brand text-white" : "text-muted hover:bg-selected"
+  }`;
+}
+
+// An outfit fits a season when every piece in it does
+function fitsOutfit(entry, wardrobe, season) {
+  return SLOTS.map((slot) =>
+    wardrobe.find((item) => item.id === entry.slots[slot]),
+  )
+    .filter(Boolean)
+    .every((item) => fitsSeason(item, season));
+}
+
 export default function Outfits() {
   const navigate = useNavigate();
   const [wardrobe, setWardrobe] = useState([]);
   const [saved, setSaved] = useState([]);
   const [tab, setTab] = useState("All outfits");
+  const [season, setSeason] = useState("All");
 
   // Outfits only store item ids, the photos come from the wardrobe
   useEffect(() => {
@@ -33,9 +61,10 @@ export default function Outfits() {
       .then((data) => setSaved(data));
   }, []);
 
-  // Newest first. The Favorites tab only shows favorites.
+  // Newest first. Both filters apply together.
   const shown = saved
     .filter((entry) => tab === "All outfits" || entry.favorite)
+    .filter((entry) => season === "All" || fitsOutfit(entry, wardrobe, season))
     .reverse();
 
   // Favorite and rename both change one outfit, so they share this
@@ -72,37 +101,56 @@ export default function Outfits() {
 
   return (
     <div className="min-h-[70vh] rounded-2xl border border-line bg-white p-6">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">My Outfits</h1>
-        <p className="mt-1 text-sm text-muted">
-          Your saved and favorite looks.
-        </p>
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">My Outfits</h1>
+          <p className="mt-1 text-sm text-muted">
+            Your saved and favorite looks.
+          </p>
+        </div>
+        <Button icon={Plus} onClick={() => navigate("/outfits/new")}>
+          Build your outfit
+        </Button>
       </header>
 
-      <div className="mt-6 flex gap-2">
-        {TABS.map((name) => (
-          <button
-            key={name}
-            type="button"
-            onClick={() => setTab(name)}
-            className={`rounded-full px-4 py-2 text-sm transition ${
-              tab === name
-                ? "bg-brand text-white"
-                : "text-muted hover:bg-selected"
-            }`}
-          >
-            {name}
-          </button>
-        ))}
+      {/* Filters: stacked on small screens, one row on desktop (tabs left, seasons right) */}
+      <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap gap-2">
+          {TABS.map((name) => (
+            <button
+              key={name}
+              type="button"
+              onClick={() => setTab(name)}
+              className={pill(tab === name)}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {SEASON_FILTERS.map((name) => (
+            <button
+              key={name}
+              type="button"
+              onClick={() => setSeason(name)}
+              className={pill(season === name)}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
       </div>
 
       {shown.length === 0 ? (
         <div className="mt-16 flex flex-col items-center text-center">
           <Shirt size={36} strokeWidth={1.3} className="text-brand" />
           <p className="mt-4 text-sm text-muted">
-            {tab === "Favorites"
-              ? "No favorites yet. Tap the heart on an outfit you love."
-              : "No saved outfits yet."}
+            {season !== "All"
+              ? `No ${season.toLowerCase()} outfits here yet.`
+              : tab === "Favorites"
+                ? "No favorites yet. Tap the heart on an outfit you love."
+                : "No saved outfits yet."}
           </p>
           <Link to="/" className="mt-3 text-sm font-medium text-brand">
             Make one on Home
