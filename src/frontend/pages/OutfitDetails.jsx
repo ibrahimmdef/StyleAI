@@ -7,6 +7,7 @@ import {
   Heart,
   Pencil,
   Plus,
+  Shirt,
   Sparkles,
 } from "lucide-react";
 import { Button } from "../components/Buttons";
@@ -190,12 +191,16 @@ export default function OutfitDetails() {
 
       <div className="mt-3 flex items-center gap-3">
         {isEditing ? (
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Outfit name"
-            className="min-w-0 flex-1 border-b border-line text-3xl font-bold tracking-tight outline-none focus:border-brand"
-          />
+          // Looks like the title, but you can type in it
+          <label className="flex min-w-0 flex-1 items-center gap-2">
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Outfit name"
+              className="min-w-0 flex-1 rounded-lg bg-transparent text-3xl font-bold tracking-tight outline-none focus:bg-selected/50"
+            />
+            <Pencil size={18} className="shrink-0 text-muted" />
+          </label>
         ) : (
           <h1 className="truncate text-3xl font-bold tracking-tight">{name}</h1>
         )}
@@ -229,9 +234,13 @@ export default function OutfitDetails() {
         {/* The outfit as a picture */}
         <section className={card}>
           {pieces.length === 0 ? (
-            <p className="py-40 text-center text-sm text-muted">
-              Pick pieces on the right to see your outfit here.
-            </p>
+            // Same height as the picture, so the page doesn't jump
+            <div className="flex h-96 flex-col items-center justify-center gap-3 rounded-xl bg-canvas/60 text-center sm:h-120">
+              <Shirt size={36} strokeWidth={1.3} className="text-brand" />
+              <p className="text-sm text-muted">
+                Pick pieces on the right to see your outfit here.
+              </p>
+            </div>
           ) : (
             <OutfitCanvas items={items} />
           )}
@@ -296,6 +305,13 @@ export default function OutfitDetails() {
                 <span className={`${tag} ml-auto`}>{pieces.length} pieces</span>
               </div>
 
+              {isEditing && (
+                <p className="mt-4 text-sm text-muted">
+                  Tap a place to pick a piece from your wardrobe. Top, bottoms
+                  and shoes are needed, the rest is up to you.
+                </p>
+              )}
+
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {rows.map((slot) => (
                   <PieceRow
@@ -351,18 +367,19 @@ function PieceRow({ slot, item, isEditing, onPick }) {
 
   if (!item) {
     return (
-      <button
-        type="button"
-        onClick={onPick}
-        className={`${row} border-dashed border-line text-sm text-brand`}
-      >
-        <span className="grid size-12 place-items-center rounded-lg bg-selected">
+      <button type="button" onClick={onPick} className={`${row} border-line`}>
+        <span className="grid size-12 shrink-0 place-items-center rounded-lg bg-canvas text-brand">
           <Plus size={18} />
         </span>
-        Add {SLOT_LABELS[slot]}
-        {!OPTIONAL_SLOTS.includes(slot) && (
-          <span className="text-xs text-muted">(needed)</span>
-        )}
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-brand capitalize">
+            Add {SLOT_LABELS[slot]}
+          </p>
+          <p className="text-xs text-muted">
+            {OPTIONAL_SLOTS.includes(slot) ? "Optional" : "Needed"}
+          </p>
+        </div>
+        <ChevronRight size={16} className="shrink-0 text-muted" />
       </button>
     );
   }
