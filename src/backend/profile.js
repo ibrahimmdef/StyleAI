@@ -12,7 +12,6 @@ const DATA_FILE = "profile.json";
 const DEFAULTS = {
   name: "User",
   email: "",
-  city: "Baku, Azerbaijan",
   photo: "",
   notifications: true,
 };
@@ -31,7 +30,7 @@ router.get("/profile", (req, res) => {
 });
 
 router.put("/profile", (req, res) => {
-  const { name, email, city, notifications } = req.body;
+  const { name, email, notifications } = req.body;
 
   if (typeof name !== "string" || !name.trim()) {
     return res.status(400).json({ message: "Name is required" });
@@ -39,9 +38,6 @@ router.put("/profile", (req, res) => {
   // Email can be left empty, but if it's there it needs an @
   if (typeof email !== "string" || (email && !email.includes("@"))) {
     return res.status(400).json({ message: "Email doesn't look right" });
-  }
-  if (typeof city !== "string") {
-    return res.status(400).json({ message: "City should be text" });
   }
   if (typeof notifications !== "boolean") {
     return res.status(400).json({ message: "Notifications is on or off" });
@@ -52,7 +48,6 @@ router.put("/profile", (req, res) => {
     ...readProfile(),
     name: name.trim(),
     email: email.trim(),
-    city: city.trim(),
     notifications,
   };
   try {

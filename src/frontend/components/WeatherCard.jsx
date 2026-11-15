@@ -38,7 +38,7 @@ function formatHour(h) {
 }
 
 // Gets the user's location, falls back to Baku if they say no
-function getLocation() {
+export function getLocation() {
   const baku = { lat: 40.41, lon: 49.87, isFallback: true };
   return new Promise((resolve) => {
     if (!navigator.geolocation) return resolve(baku);

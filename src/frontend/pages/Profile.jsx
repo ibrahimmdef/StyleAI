@@ -14,6 +14,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { Button } from "../components/Buttons";
+import { getLocation } from "../components/WeatherCard";
 
 const API = "http://localhost:5000/api/profile";
 const SOON = "Accounts are coming soon.";
@@ -26,14 +27,13 @@ const input =
 export default function Profile() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [city, setCity] = useState("");
+  const [place, setPlace] = useState("Finding your location…");
   const [photo, setPhoto] = useState("");
   const [notifications, setNotifications] = useState(true);
   const [unit, setUnit] = useState("C");
   const [isEditing, setIsEditing] = useState(false);
   const [draftName, setDraftName] = useState("");
   const [draftEmail, setDraftEmail] = useState("");
-  const [draftCity, setDraftCity] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -52,10 +52,28 @@ export default function Profile() {
       .then((data) => setUnit(data.unit));
   }, []);
 
+  useEffect(() => {
+    findPlace();
+  }, []);
+
+  // Same location the weather card uses, turned into a city name
+  async function findPlace() {
+    const { lat, lon, isFallback } = await getLocation();
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/place?lat=${lat}&lon=${lon}`,
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setPlace(isFallback ? `${data.place} (location off)` : data.place);
+    } catch {
+      setPlace("Could not find your location");
+    }
+  }
+
   function showProfile(data) {
     setName(data.name);
     setEmail(data.email);
-    setCity(data.city);
     setPhoto(data.photo);
     setNotifications(data.notifications);
   }
@@ -66,7 +84,7 @@ export default function Profile() {
       const res = await fetch(API, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, city, notifications, ...changes }),
+        body: JSON.stringify({ name, email, notifications, ...changes }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
@@ -106,7 +124,6 @@ export default function Profile() {
   function startEdit() {
     setDraftName(name);
     setDraftEmail(email);
-    setDraftCity(city);
     setError("");
     setMessage("");
     setIsEditing(true);
@@ -121,11 +138,7 @@ export default function Profile() {
       setError("That email doesn't look right.");
       return;
     }
-    const ok = await save({
-      name: draftName,
-      email: draftEmail,
-      city: draftCity,
-    });
+    const ok = await save({ name: draftName, email: draftEmail });
     if (ok) setIsEditing(false);
   }
 
@@ -181,7 +194,7 @@ export default function Profile() {
         </div>
 
         {isEditing && (
-          <div className="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-3">
+          <div className="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-2">
             <label className="block text-sm font-medium">
               Name
               <input
@@ -200,16 +213,7 @@ export default function Profile() {
                 className={input}
               />
             </label>
-            <label className="block text-sm font-medium">
-              Location
-              <input
-                value={draftCity}
-                onChange={(e) => setDraftCity(e.target.value)}
-                placeholder="Baku, Azerbaijan"
-                className={input}
-              />
-            </label>
-            <div className="flex justify-end gap-3 sm:col-span-3">
+            <div className="flex justify-end gap-3 sm:col-span-2">
               <Button variant="secondary" onClick={() => setIsEditing(false)}>
                 Cancel
               </Button>
@@ -242,10 +246,10 @@ export default function Profile() {
             icon={MapPin}
             title="Location & weather"
             text="Set your location for better weather-based recommendations."
-            onClick={startEdit}
+            onClick={findPlace}
           >
             <p className="text-xs text-ink">
-              {city || "No location set"} · °{unit}
+              {place} · °{unit}
             </p>
           </SettingRow>
         </section>
