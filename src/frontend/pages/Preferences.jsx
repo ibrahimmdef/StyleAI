@@ -1,30 +1,30 @@
 import { useEffect, useState } from "react";
-import { Check } from "lucide-react";
+import { Briefcase, Check, Dumbbell, Feather, Shirt } from "lucide-react";
 import { Button } from "../components/Buttons";
 import { COLORS, OCCASIONS, SEASONS } from "../../shared/catalog";
 
 const API = "http://localhost:5000/api/preferences";
 
-// Picture and a short line for each style card
+// Icon and a short line for each style card
 const STYLE_CARDS = [
   {
     name: "Casual",
-    image: "/styles/casual.webp",
+    icon: Shirt,
     text: "Comfortable and effortless everyday looks.",
   },
   {
     name: "Smart casual",
-    image: "/styles/smart-casual.webp",
+    icon: Briefcase,
     text: "Polished and versatile for multiple occasions.",
   },
   {
     name: "Minimal",
-    image: "/styles/minimal.webp",
+    icon: Feather,
     text: "Clean, timeless pieces with a refined look.",
   },
   {
     name: "Sporty",
-    image: "/styles/sporty.webp",
+    icon: Dumbbell,
     text: "Athletic and comfortable street style.",
   },
 ];
@@ -134,38 +134,50 @@ export default function Preferences() {
           {/* Style cards */}
           <section className={card}>
             <h2 className="font-semibold">Preferred Styles</h2>
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {STYLE_CARDS.map((style) => {
                 const active = styles.includes(style.name);
+                const Icon = style.icon;
                 return (
                   <button
                     key={style.name}
                     type="button"
                     onClick={() => setStyles(toggle(styles, style.name))}
-                    className={`relative flex flex-col rounded-xl border p-2 text-left transition ${
+                    className={`flex items-center gap-4 rounded-xl border p-4 text-left transition ${
                       active
-                        ? "border-brand ring-1 ring-brand"
+                        ? "border-brand bg-selected/40"
                         : "border-line hover:border-brand/40"
                     }`}
                   >
-                    {active && (
-                      <span className="absolute top-3 right-3 grid size-5 place-items-center rounded-full bg-brand text-white">
-                        <Check size={12} />
-                      </span>
-                    )}
-                    <img
-                      src={style.image}
-                      alt=""
-                      className="aspect-3/4 w-full rounded-lg object-cover"
-                    />
-                    <p
-                      className={`mt-2 text-sm font-medium ${active ? "text-brand" : ""}`}
+                    <span
+                      className={`grid size-12 shrink-0 place-items-center rounded-xl transition ${
+                        active
+                          ? "bg-brand text-white"
+                          : "bg-selected text-brand"
+                      }`}
                     >
-                      {style.name}
-                    </p>
-                    <p className="mt-1 text-xs leading-4 text-muted">
-                      {style.text}
-                    </p>
+                      <Icon size={22} strokeWidth={1.6} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span
+                        className={`block text-sm font-medium ${active ? "text-brand" : ""}`}
+                      >
+                        {style.name}
+                      </span>
+                      <span className="mt-0.5 block text-xs leading-4 text-muted">
+                        {style.text}
+                      </span>
+                    </span>
+                    {/* Works like a checkbox: empty ring, filled when picked */}
+                    <span
+                      className={`grid size-5 shrink-0 place-items-center rounded-full border transition ${
+                        active
+                          ? "border-brand bg-brand text-white"
+                          : "border-line"
+                      }`}
+                    >
+                      {active && <Check size={12} />}
+                    </span>
                   </button>
                 );
               })}
