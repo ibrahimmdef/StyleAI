@@ -9,6 +9,7 @@ import Outfits from "./pages/Outfits";
 import OutfitDetails from "./pages/OutfitDetails";
 import BuildOutfit from "./pages/BuildOutfit";
 import Preferences from "./pages/Preferences";
+import Profile from "./pages/Profile";
 
 export default function App() {
   return (
@@ -23,10 +24,7 @@ export default function App() {
         <Route path="/outfits/:id" element={<OutfitDetails />} />
         <Route path="/outfits/:id/edit" element={<BuildOutfit />} />
         <Route path="preferences" element={<Preferences />} />
-        <Route
-          path="profile"
-          element={<PlaceholderPage title="Profile & Settings" />}
-        />
+        <Route path="profile" element={<Profile />} />
         <Route path="*" element={<PlaceholderPage title="Page not found" />} />
       </Route>
     </Routes>
