@@ -4,6 +4,7 @@ import cors from "cors";
 
 import itemsRoutes, { cleanUploads } from "./items.js";
 import outfitsRoutes from "./outfits.js";
+import preferencesRoutes from "./preferences.js";
 import replicateRoutes from "./replicate.js";
 import weatherRoutes from "./weather.js";
 
@@ -16,6 +17,7 @@ app.use("/uploads", express.static("uploads"));
 
 app.use("/api", itemsRoutes);
 app.use("/api", outfitsRoutes);
+app.use("/api", preferencesRoutes);
 app.use("/api", replicateRoutes);
 app.use("/api", weatherRoutes);
 
