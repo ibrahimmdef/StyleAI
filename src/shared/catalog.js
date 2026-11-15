@@ -32,12 +32,12 @@ export const CATEGORIES = {
 export const COLORS = {
   Black: "#1c1c1e",
   White: "#ffffff",
-  Gray: "#9ca3af",
-  Beige: "#d2b49c",
-  Brown: "#5b3a2e",
-  Blue: "#6b8cae",
-  Green: "#6b8f71",
-  Red: "#b5483f",
+  Gray: "#8a8d93",
+  Beige: "#dcc5a1",
+  Brown: "#6b4226",
+  Blue: "#1f4e8c",
+  Green: "#4b6b3c",
+  Red: "#b3261e",
 };
 
 export const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
