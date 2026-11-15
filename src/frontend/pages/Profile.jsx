@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Bell,
+  Camera,
   ChevronRight,
   Image,
   LockKeyhole,
@@ -15,31 +16,32 @@ import {
 import { Button } from "../components/Buttons";
 
 const API = "http://localhost:5000/api/profile";
+const SOON = "Accounts are coming soon.";
 
 const card = "rounded-2xl border border-line bg-white p-5";
 const row = "flex items-center gap-4 border-t border-line py-4";
 const input =
-  "mt-1 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-brand";
+  "mt-1 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm font-normal outline-none focus:border-brand";
 
 export default function Profile() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [city, setCity] = useState("");
+  const [photo, setPhoto] = useState("");
   const [notifications, setNotifications] = useState(true);
   const [unit, setUnit] = useState("C");
-  const [itemCount, setItemCount] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [draftName, setDraftName] = useState("");
   const [draftEmail, setDraftEmail] = useState("");
+  const [draftCity, setDraftCity] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     fetch(API)
       .then((res) => res.json())
-      .then((data) => {
-        setName(data.name);
-        setEmail(data.email);
-        setNotifications(data.notifications);
-      })
+      .then((data) => showProfile(data))
       .catch(() => setError("Could not load your profile."));
   }, []);
 
@@ -50,11 +52,13 @@ export default function Profile() {
       .then((data) => setUnit(data.unit));
   }, []);
 
-  useEffect(() => {
-    fetch("http://localhost:5000/api/Items")
-      .then((res) => res.json())
-      .then((data) => setItemCount(data.length));
-  }, []);
+  function showProfile(data) {
+    setName(data.name);
+    setEmail(data.email);
+    setCity(data.city);
+    setPhoto(data.photo);
+    setNotifications(data.notifications);
+  }
 
   // Sends the whole profile, returns true when it worked
   async function save(changes) {
@@ -62,13 +66,11 @@ export default function Profile() {
       const res = await fetch(API, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, notifications, ...changes }),
+        body: JSON.stringify({ name, email, city, notifications, ...changes }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-      setName(data.name);
-      setEmail(data.email);
-      setNotifications(data.notifications);
+      showProfile(data);
       setError("");
       return true;
     } catch (err) {
@@ -77,10 +79,36 @@ export default function Profile() {
     }
   }
 
+  // The photo is sent on its own, right after it's picked
+  async function uploadPhoto(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("photo", file);
+    setIsUploading(true);
+    try {
+      const res = await fetch(`${API}/photo`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setPhoto(data.photo);
+      setError("");
+    } catch (err) {
+      setError(err.message || "Could not upload the photo.");
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
   function startEdit() {
     setDraftName(name);
     setDraftEmail(email);
+    setDraftCity(city);
     setError("");
+    setMessage("");
     setIsEditing(true);
   }
 
@@ -93,8 +121,16 @@ export default function Profile() {
       setError("That email doesn't look right.");
       return;
     }
-    const ok = await save({ name: draftName, email: draftEmail });
+    const ok = await save({
+      name: draftName,
+      email: draftEmail,
+      city: draftCity,
+    });
     if (ok) setIsEditing(false);
+  }
+
+  function notReady() {
+    setMessage(SOON);
   }
 
   return (
@@ -107,14 +143,34 @@ export default function Profile() {
       {/* Name card */}
       <section className={`${card} mt-6`}>
         <div className="flex flex-wrap items-center gap-5">
-          {/* No photo yet, so the first letter stands in */}
-          <span className="grid size-14 shrink-0 place-items-center rounded-full bg-selected text-2xl sm:size-20 sm:text-3xl font-semibold text-brand">
-            {name.charAt(0).toUpperCase()}
-          </span>
+          {/* Tapping the photo picks a new one */}
+          <label className="group relative size-16 shrink-0 cursor-pointer sm:size-24">
+            {photo ? (
+              <img
+                src={photo}
+                alt={name}
+                className="size-full rounded-full object-cover"
+              />
+            ) : (
+              <span className="grid size-full place-items-center rounded-full bg-selected text-2xl font-semibold text-brand sm:text-3xl">
+                {name.charAt(0).toUpperCase()}
+              </span>
+            )}
+            <span className="absolute inset-0 grid place-items-center rounded-full bg-ink/40 text-white opacity-0 transition group-hover:opacity-100">
+              <Camera size={20} />
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={uploadPhoto}
+              disabled={isUploading}
+              className="hidden"
+            />
+          </label>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xl font-semibold">{name}</p>
+            <p className="truncate text-2xl font-bold">{name}</p>
             <p className="truncate text-sm text-muted">
-              {email || "No email added"}
+              {isUploading ? "Uploading photo…" : email || "No email added"}
             </p>
           </div>
           {!isEditing && (
@@ -125,7 +181,7 @@ export default function Profile() {
         </div>
 
         {isEditing && (
-          <div className="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-2">
+          <div className="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-3">
             <label className="block text-sm font-medium">
               Name
               <input
@@ -144,7 +200,16 @@ export default function Profile() {
                 className={input}
               />
             </label>
-            <div className="flex justify-end gap-3 sm:col-span-2">
+            <label className="block text-sm font-medium">
+              Location
+              <input
+                value={draftCity}
+                onChange={(e) => setDraftCity(e.target.value)}
+                placeholder="Baku, Azerbaijan"
+                className={input}
+              />
+            </label>
+            <div className="flex justify-end gap-3 sm:col-span-3">
               <Button variant="secondary" onClick={() => setIsEditing(false)}>
                 Cancel
               </Button>
@@ -155,11 +220,12 @@ export default function Profile() {
       </section>
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+      {message && <p className="mt-4 text-sm text-brand">{message}</p>}
 
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
         {/* Account */}
         <section className={card}>
-          <h2 className="mb-3 font-semibold">Account Settings</h2>
+          <h2 className="mb-3 text-lg font-bold">Account Settings</h2>
           <SettingRow
             icon={UserRound}
             title="Personal information"
@@ -170,20 +236,25 @@ export default function Profile() {
             icon={LockKeyhole}
             title="Password & security"
             text="Change your password and manage security."
+            onClick={notReady}
           />
           <SettingRow
             icon={MapPin}
             title="Location & weather"
-            text={`Uses your device location · °${unit}`}
-            to="/preferences"
-          />
+            text="Set your location for better weather-based recommendations."
+            onClick={startEdit}
+          >
+            <p className="text-xs text-ink">
+              {city || "No location set"} · °{unit}
+            </p>
+          </SettingRow>
         </section>
 
         {/* App */}
         <section className={card}>
-          <h2 className="mb-3 font-semibold">Preferences</h2>
+          <h2 className="mb-3 text-lg font-bold">Preferences</h2>
           <div className={row}>
-            <Bell size={20} strokeWidth={1.6} className="shrink-0 text-brand" />
+            <Bell size={22} strokeWidth={1.6} className="shrink-0 text-ink" />
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium">Notifications</p>
               <p className="text-xs text-muted">
@@ -206,25 +277,31 @@ export default function Profile() {
             icon={ShieldCheck}
             title="Privacy & data"
             text="Manage your data and privacy settings."
+            onClick={notReady}
           />
           <SettingRow
             icon={Image}
             title="Wardrobe images & storage"
-            text={`${itemCount} pieces in your wardrobe.`}
+            text="Manage your uploaded images and storage."
             to="/wardrobe"
           />
         </section>
       </div>
 
-      {/* There are no accounts yet, so these wait */}
+      {/* There are no accounts yet, so these only say so */}
       <div className="mt-5 flex items-center justify-between">
-        <Button variant="secondary" icon={LogOut} disabled>
+        <Button
+          variant="secondary"
+          icon={LogOut}
+          onClick={notReady}
+          className="px-8"
+        >
           Log out
         </Button>
         <button
           type="button"
-          disabled
-          className="inline-flex items-center gap-2 text-sm text-red-600 disabled:opacity-50"
+          onClick={notReady}
+          className="inline-flex items-center gap-2 text-sm font-medium text-red-600"
         >
           <Trash2 size={16} /> Delete account
         </button>
@@ -233,23 +310,18 @@ export default function Profile() {
   );
 }
 
-// One line in a settings card. With `to` it's a link, with `onClick` a button,
-// with neither it's not ready yet.
-function SettingRow({ icon: Icon, title, text, to, onClick }) {
+// One line in a settings card: a link with `to`, a button with `onClick`.
+// Anything inside it (children) shows between the title and the text.
+function SettingRow({ icon: Icon, title, text, to, onClick, children }) {
   const content = (
     <>
-      <Icon size={20} strokeWidth={1.6} className="shrink-0 text-brand" />
+      <Icon size={22} strokeWidth={1.6} className="shrink-0 text-ink" />
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium">{title}</p>
+        {children}
         <p className="text-xs text-muted">{text}</p>
       </div>
-      {to || onClick ? (
-        <ChevronRight size={16} className="shrink-0 text-muted" />
-      ) : (
-        <span className="rounded-full bg-selected px-2 py-0.5 text-xs text-muted">
-          Soon
-        </span>
-      )}
+      <ChevronRight size={16} className="shrink-0 text-muted" />
     </>
   );
 
@@ -260,16 +332,13 @@ function SettingRow({ icon: Icon, title, text, to, onClick }) {
       </Link>
     );
   }
-  if (onClick) {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        className={`${row} w-full text-left hover:text-brand`}
-      >
-        {content}
-      </button>
-    );
-  }
-  return <div className={row}>{content}</div>;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`${row} w-full text-left hover:text-brand`}
+    >
+      {content}
+    </button>
+  );
 }

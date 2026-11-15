@@ -35,6 +35,8 @@ export function cleanUploads() {
 
   for (const name of fs.readdirSync("uploads")) {
     const file = path.join("uploads", name);
+    // The profile photo isn't an item, leave it alone
+    if (name.startsWith("avatar-")) continue;
     if (used.includes(name) || fs.statSync(file).mtimeMs > hourAgo) continue;
     fs.rmSync(file, { force: true });
     console.log("Removed unused photo:", name);
