@@ -6,8 +6,6 @@ import {
   Crown,
   Dumbbell,
   Feather,
-  Flower2,
-  Gem,
   Hourglass,
   Shirt,
   Zap,
@@ -44,11 +42,7 @@ const STYLE_CARDS = [
     icon: Crown,
     text: "Timeless basics that never go out of style.",
   },
-  {
-    name: "Elegant",
-    icon: Gem,
-    text: "Graceful pieces for dinners and evenings.",
-  },
+
   {
     name: "Sporty",
     icon: Dumbbell,
@@ -59,11 +53,7 @@ const STYLE_CARDS = [
     icon: Zap,
     text: "Bold, urban looks with sneakers and hoodies.",
   },
-  {
-    name: "Bohemian",
-    icon: Flower2,
-    text: "Flowy, relaxed pieces with earthy tones.",
-  },
+
   {
     name: "Vintage",
     icon: Hourglass,

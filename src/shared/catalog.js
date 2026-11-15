@@ -48,10 +48,8 @@ export const STYLES = [
   "Formal",
   "Minimal",
   "Classic",
-  "Elegant",
   "Sporty",
   "Streetwear",
-  "Bohemian",
   "Vintage",
 ];
 
