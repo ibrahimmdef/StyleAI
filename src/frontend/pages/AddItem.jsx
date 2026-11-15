@@ -313,7 +313,7 @@ export default function AddItem() {
 
             <div>
               <p className="text-sm">Style</p>
-              <div className="mt-2 grid grid-cols-4 gap-2">
+              <div className="mt-2 flex flex-wrap gap-2">
                 {STYLES.map((s) => (
                   <button
                     key={s}

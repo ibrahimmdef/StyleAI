@@ -42,7 +42,18 @@ export const COLORS = {
 
 export const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
 
-export const STYLES = ["Casual", "Smart casual", "Minimal", "Sporty"];
+export const STYLES = [
+  "Casual",
+  "Smart casual",
+  "Formal",
+  "Minimal",
+  "Classic",
+  "Elegant",
+  "Sporty",
+  "Streetwear",
+  "Bohemian",
+  "Vintage",
+];
 
 // What an outfit is for
 export const OCCASIONS = ["Casual", "Work", "Evening", "Sport"];

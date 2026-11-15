@@ -1,5 +1,17 @@
 import { useEffect, useState } from "react";
-import { Briefcase, Check, Dumbbell, Feather, Shirt } from "lucide-react";
+import {
+  Briefcase,
+  Check,
+  Coffee,
+  Crown,
+  Dumbbell,
+  Feather,
+  Flower2,
+  Gem,
+  Hourglass,
+  Shirt,
+  Zap,
+} from "lucide-react";
 import { Button } from "../components/Buttons";
 import { COLORS, OCCASIONS, SEASONS } from "../../shared/catalog";
 
@@ -14,8 +26,13 @@ const STYLE_CARDS = [
   },
   {
     name: "Smart casual",
+    icon: Coffee,
+    text: "Polished but relaxed, good for most days.",
+  },
+  {
+    name: "Formal",
     icon: Briefcase,
-    text: "Polished and versatile for multiple occasions.",
+    text: "Suits, blazers and sharp office looks.",
   },
   {
     name: "Minimal",
@@ -23,9 +40,34 @@ const STYLE_CARDS = [
     text: "Clean, timeless pieces with a refined look.",
   },
   {
+    name: "Classic",
+    icon: Crown,
+    text: "Timeless basics that never go out of style.",
+  },
+  {
+    name: "Elegant",
+    icon: Gem,
+    text: "Graceful pieces for dinners and evenings.",
+  },
+  {
     name: "Sporty",
     icon: Dumbbell,
-    text: "Athletic and comfortable street style.",
+    text: "Athletic and comfortable, made to move.",
+  },
+  {
+    name: "Streetwear",
+    icon: Zap,
+    text: "Bold, urban looks with sneakers and hoodies.",
+  },
+  {
+    name: "Bohemian",
+    icon: Flower2,
+    text: "Flowy, relaxed pieces with earthy tones.",
+  },
+  {
+    name: "Vintage",
+    icon: Hourglass,
+    text: "Retro pieces with a story behind them.",
   },
 ];
 
