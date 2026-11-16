@@ -6,6 +6,7 @@ import {
   fitsSeason,
   fitsStyle,
   getSeason,
+  matchedStyles,
   needsLayer,
   preferWhere,
 } from "../../shared/rules.js";
@@ -76,4 +77,14 @@ test("liked colors go in the draw twice", () => {
   assert.deepEqual(boostColors([black, red], ["Red"]), [black, red, red]);
   assert.deepEqual(boostColors([black, red], []), [black, red]);
   assert.deepEqual(boostColors([black, red]), [black, red]);
+});
+
+test("matchedStyles finds the user's styles in an outfit", () => {
+  const pieces = [{ styles: ["Casual", "Sporty"] }, { styles: ["Minimal"] }];
+  assert.deepEqual(matchedStyles(pieces, ["Sporty", "Casual", "Formal"]), [
+    "Sporty",
+    "Casual",
+  ]);
+  assert.deepEqual(matchedStyles(pieces, ["Formal"]), []);
+  assert.deepEqual(matchedStyles([], ["Casual"]), []);
 });

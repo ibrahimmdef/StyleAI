@@ -13,6 +13,7 @@ import {
   fitsSeason,
   fitsStyle,
   getSeason,
+  matchedStyles,
   needsLayer,
   preferWhere,
 } from "../../shared/rules";
@@ -243,6 +244,10 @@ export default function Home() {
     ]),
   );
 
+  // For "Why this outfit?": the user's styles that are really in this outfit
+  const pieces = Object.values(items).filter(Boolean);
+  const styleMatch = matchedStyles(pieces, preferences?.styles);
+
   // The device's own time zone, so the date matches the greeting
   const date = new Intl.DateTimeFormat("en-US", {
     weekday: "long",
@@ -279,6 +284,8 @@ export default function Home() {
             failed={weatherFailed}
             unit={preferences?.unit}
             hasLayer={Boolean(items.outerwear)}
+            styles={styleMatch}
+            isEmpty={pieces.length === 0}
           >
             {/* Quick shuffle: no text, no pinned pieces */}
             <Button

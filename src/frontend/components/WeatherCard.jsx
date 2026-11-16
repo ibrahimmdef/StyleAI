@@ -140,8 +140,22 @@ function WeatherSection({ weather, failed, isFallback, unit }) {
   );
 }
 
+// ["Casual", "Sporty", "Minimal"] -> "casual, sporty and minimal"
+function joinStyles(styles) {
+  const words = styles.map((style) => style.toLowerCase());
+  if (words.length < 2) return words.join("");
+  return `${words.slice(0, -1).join(", ")} and ${words.at(-1)}`;
+}
+
+// The style line changes with the outfit on screen
+function styleReason(styles, isEmpty) {
+  if (isEmpty) return "Picked to match your style";
+  if (styles.length === 0) return "Something a little different today";
+  return `Matches your ${joinStyles(styles)} style`;
+}
+
 // Short reasons for the outfit ("Why this outfit?")
-function OutfitReasons({ hasLayer, temp, unit, children }) {
+function OutfitReasons({ hasLayer, temp, unit, styles, isEmpty, children }) {
   const reasons = [
     {
       icon: Cloud,
@@ -150,7 +164,7 @@ function OutfitReasons({ hasLayer, temp, unit, children }) {
           ? `Comfortable for ${toUnit(temp, unit)}°${unit}`
           : "Comfortable for today's weather",
     },
-    { icon: Palette, text: "Matches your casual style" },
+    { icon: Palette, text: styleReason(styles, isEmpty) },
     {
       icon: Layers2,
       text: hasLayer
@@ -200,6 +214,8 @@ export default function WeatherCard({
   failed,
   hasLayer,
   unit = "C",
+  styles = [],
+  isEmpty = true,
   children,
 }) {
   return (
@@ -210,7 +226,13 @@ export default function WeatherCard({
         isFallback={weather?.isFallback}
         unit={unit}
       />
-      <OutfitReasons hasLayer={hasLayer} temp={weather?.temp} unit={unit}>
+      <OutfitReasons
+        hasLayer={hasLayer}
+        temp={weather?.temp}
+        unit={unit}
+        styles={styles}
+        isEmpty={isEmpty}
+      >
         {children}
       </OutfitReasons>
     </>

@@ -46,3 +46,10 @@ export function preferWhere(items, check) {
 export function boostColors(items, colors = []) {
   return [...items, ...items.filter((item) => colors.includes(item.color))];
 }
+
+// Which of the user's styles show up in these pieces? Keeps the user's order.
+export function matchedStyles(pieces, styles = []) {
+  return styles.filter((style) =>
+    pieces.some((item) => item.styles?.includes(style)),
+  );
+}
