@@ -10,10 +10,13 @@ import OutfitDetails from "./pages/OutfitDetails";
 import BuildOutfit from "./pages/BuildOutfit";
 import Preferences from "./pages/Preferences";
 import Profile from "./pages/Profile";
+import Login from "./pages/Login";
 
 export default function App() {
   return (
     <Routes>
+      {/* Login has no sidebar, so it sits outside the layout */}
+      <Route path="login" element={<Login />} />
       <Route element={<AppLayout />}>
         <Route index element={<Home />} />
         <Route path="wardrobe" element={<Wardrobe />} />

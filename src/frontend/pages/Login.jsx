@@ -1,0 +1,183 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Brand } from "../components/Sidebar";
+
+const PROFILE_API = "http://localhost:5000/api/profile";
+
+const input =
+  "w-full rounded-full border border-line bg-canvas/60 px-5 py-3 text-sm outline-none transition focus:-translate-y-0.5 focus:border-brand focus:bg-white focus:shadow-soft";
+const mainButton =
+  "mt-4 rounded-full bg-brand px-12 py-3 text-xs font-bold tracking-wider text-white uppercase transition hover:-translate-y-0.5 hover:bg-brand-hover active:scale-95";
+const ghostButton =
+  "mt-6 rounded-full border-2 border-white px-12 py-3 text-xs font-bold tracking-wider uppercase transition hover:-translate-y-0.5 hover:bg-white/10 active:scale-95";
+const panelText =
+  "absolute inset-0 flex flex-col items-center justify-center px-10 text-center transition-opacity duration-700";
+
+export default function Login() {
+  const navigate = useNavigate();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  function switchTo(signUp) {
+    setIsSignUp(signUp);
+    setError("");
+  }
+
+  async function submit(e) {
+    e.preventDefault();
+    if (isSignUp && !name.trim()) {
+      setError("Enter your name.");
+      return;
+    }
+    if (!email.includes("@")) {
+      setError("Enter a valid email.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password needs at least 6 characters.");
+      return;
+    }
+
+    // No accounts yet: sign up only puts the name and email on the profile
+    if (isSignUp) {
+      try {
+        const profile = await fetch(PROFILE_API).then((res) => res.json());
+        const res = await fetch(PROFILE_API, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...profile, name, email }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+      } catch (err) {
+        setError(err.message || "Could not create your account.");
+        return;
+      }
+    }
+    navigate("/");
+  }
+
+  // Both forms look the same, sign up just has a name field on top
+  function renderForm(signUp) {
+    const active = isSignUp === signUp;
+    return (
+      <form
+        onSubmit={submit}
+        className={`flex flex-col items-center justify-center gap-3 px-8 py-10 text-center transition-opacity duration-700 md:absolute md:top-0 md:h-full md:w-1/2 md:px-12 ${
+          signUp ? "md:right-0" : "md:left-0"
+        } ${active ? "" : "max-md:hidden md:pointer-events-none md:opacity-0"}`}
+      >
+        <h1 className="mb-2 text-3xl font-bold tracking-tight">
+          {signUp ? "Create Account" : "Sign In"}
+        </h1>
+        <p className="mb-3 text-sm text-muted">
+          {signUp
+            ? "Start building your digital wardrobe."
+            : "Welcome back to your wardrobe."}
+        </p>
+
+        {signUp && (
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Name"
+            className={input}
+          />
+        )}
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+          className={input}
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+          className={input}
+        />
+
+        {!signUp && (
+          <button
+            type="button"
+            className="mt-1 text-sm text-muted hover:text-brand"
+          >
+            Forgot your password?
+          </button>
+        )}
+        {active && error && <p className="text-sm text-red-600">{error}</p>}
+
+        <button type="submit" className={mainButton}>
+          {signUp ? "Sign Up" : "Sign In"}
+        </button>
+
+        {/* On phones there's no sliding panel, so this switches the form */}
+        <p className="mt-4 text-sm text-muted md:hidden">
+          {signUp ? "Already have an account?" : "New to StyleAI?"}{" "}
+          <button
+            type="button"
+            onClick={() => switchTo(!signUp)}
+            className="font-medium text-brand"
+          >
+            {signUp ? "Sign in" : "Create one"}
+          </button>
+        </p>
+      </form>
+    );
+  }
+
+  return (
+    <div className="flex min-h-dvh flex-col items-center justify-center gap-8 bg-canvas px-4 py-10">
+      <Brand />
+
+      <div className="relative w-full max-w-3xl overflow-hidden rounded-3xl border border-white bg-white shadow-soft md:h-120">
+        {renderForm(false)}
+        {renderForm(true)}
+
+        {/* Blue panel: sits on the right, slides left when signing up */}
+        <div
+          className={`absolute top-0 left-1/2 z-10 h-full w-1/2 bg-linear-135 from-brand to-ink text-white transition-transform duration-700 ease-in-out max-md:hidden ${
+            isSignUp ? "-translate-x-full" : ""
+          }`}
+        >
+          <div
+            className={`${panelText} ${isSignUp ? "pointer-events-none opacity-0" : ""}`}
+          >
+            <h2 className="text-3xl font-bold">Hello, Friend!</h2>
+            <p className="mt-4 text-white/85">
+              Add your clothes and get an outfit for every day.
+            </p>
+            <button
+              type="button"
+              onClick={() => switchTo(true)}
+              className={ghostButton}
+            >
+              Sign Up
+            </button>
+          </div>
+
+          <div
+            className={`${panelText} ${isSignUp ? "" : "pointer-events-none opacity-0"}`}
+          >
+            <h2 className="text-3xl font-bold">Welcome Back!</h2>
+            <p className="mt-4 text-white/85">
+              Sign in to see today's outfit and your saved looks.
+            </p>
+            <button
+              type="button"
+              onClick={() => switchTo(false)}
+              className={ghostButton}
+            >
+              Sign In
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

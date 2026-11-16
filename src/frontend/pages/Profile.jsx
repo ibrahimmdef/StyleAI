@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Bell,
   Camera,
@@ -25,6 +25,7 @@ const input =
   "mt-1 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm font-normal outline-none focus:border-brand";
 
 export default function Profile() {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [place, setPlace] = useState("Finding your location…");
@@ -297,7 +298,7 @@ export default function Profile() {
         <Button
           variant="secondary"
           icon={LogOut}
-          onClick={notReady}
+          onClick={() => navigate("/login")}
           className="px-8"
         >
           Log out
