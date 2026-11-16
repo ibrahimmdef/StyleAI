@@ -214,11 +214,11 @@ export default function Home() {
     ]),
   );
 
+  // The device's own time zone, so the date matches the greeting
   const date = new Intl.DateTimeFormat("en-US", {
     weekday: "long",
     month: "long",
     day: "numeric",
-    timeZone: "Asia/Baku",
   }).format(new Date());
 
   return (
