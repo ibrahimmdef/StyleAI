@@ -51,6 +51,7 @@ export default function Home() {
   const [activeSlot, setActiveSlot] = useState(null);
   // The last question and the AI's answer, shown under the prompt box
   const [chat, setChat] = useState(null);
+  const [hasOpened, setHasOpened] = useState(false);
   const closePicker = useCallback(() => setActiveSlot(null), []);
   const noticeTimer = useRef();
 
@@ -95,8 +96,34 @@ export default function Home() {
     fetch(`${API_URL}/api/preferences`)
       .then((res) => res.json())
       .then((data) => setPreferences(data))
-      .catch(() => setPreferences(null));
+      // No preferences is fine, Stella just gets no hints
+      .catch(() => setPreferences({}));
   }, []);
+
+  // Stella says hi once the wardrobe, weather and preferences are in.
+  // Picking today's outfit costs an AI call, so she only does it once a day.
+  useEffect(() => {
+    const ready =
+      wardrobe.length > 0 && (weather || weatherFailed) && preferences;
+    if (!ready || hasOpened) return;
+    setHasOpened(true);
+
+    const today = new Date().toDateString();
+    if (readStorage(STORAGE.outfitDay, "") === today) {
+      setChat({
+        question: "",
+        answer: `${hello()} Today's fit is ready. Want something different? Just ask.`,
+      });
+      return;
+    }
+    writeStorage(STORAGE.outfitDay, today);
+    generate("", [], true);
+  }, [wardrobe, weather, weatherFailed, preferences, hasOpened]);
+
+  // The name stays here, it isn't sent to the AI
+  function hello() {
+    return `${greeting(new Date().getHours())}, ${profile?.name || "there"}!`;
+  }
 
   // Toast message and swapping a piece
   function notify(message) {
@@ -167,8 +194,9 @@ export default function Home() {
   }
 
   // Asks the AI first. If it isn't set up, is over its daily limit or fails,
-  // the random pick takes over, so the button always works.
-  async function generate(prompt, pinnedIds) {
+  // the random pick takes over for the button and the daily pick.
+  // `opening` is the daily pick when the page opens.
+  async function generate(prompt, pinnedIds, opening = false) {
     if (isGenerating) return;
     if (wardrobe.length === 0) {
       notify("Add some clothes to your wardrobe first.");
@@ -185,6 +213,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           request: prompt,
+          opening,
           temp: weather?.temp,
           slots,
           // Hints, not rules: the AI weighs them against the request
@@ -207,15 +236,27 @@ export default function Home() {
         for (const slot of SLOTS) next[slot] = data.picks[slot] ?? null;
         setOutfit(next);
       }
+      const reply = data.reply || "Here's a fresh one from your wardrobe.";
       setChat({
         question: prompt,
-        answer: data.reply || "Here's a fresh one from your wardrobe.",
+        answer: opening ? `${hello()} ${reply}` : reply,
       });
     } catch {
+      // A typed message might not be asking for an outfit, so don't guess
+      if (prompt) {
+        setChat({
+          question: prompt,
+          answer:
+            "I can't think straight right now, sorry. Tap Generate new outfit for a quick pick.",
+        });
+        return;
+      }
       setOutfit(randomPicks(slots));
       setChat({
         question: prompt,
-        answer: "Here's a fresh one from your wardrobe.",
+        answer: opening
+          ? `${hello()} I picked today's outfit for you.`
+          : "Here's a fresh one from your wardrobe.",
       });
     } finally {
       setIsGenerating(false);

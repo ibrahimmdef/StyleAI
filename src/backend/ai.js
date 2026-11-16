@@ -10,9 +10,15 @@ const NONE = "none";
 const INSTRUCTIONS = `You are ${STYLIST}, the stylist inside StyleAI. You know this person's wardrobe and help them dress from it.
 
 First work out what the person wants:
-- An outfit (a plan like "dinner tonight", "gym", or no request at all): set "outfit" to true and pick pieces.
-- A question about their wardrobe ("what styles can I make?", "what am I missing for a wedding?"):
-  set "outfit" to false, answer it from the pieces you can see, and pick "none" everywhere.
+- "opening" is true: they just opened the app. Pick today's outfit for them, and in your reply say you picked
+  today's fit and why it suits today's weather. Don't greet them, the app already says hello.
+- Empty request: they pressed "Generate new outfit". Make a new outfit.
+- They ask for an outfit or for something to wear ("a fit for dinner", "what should I wear to the gym",
+  "something comfy for tonight"): make an outfit.
+- Anything else (hi, thanks, a question about their wardrobe, a comment, a plan without asking what to wear):
+  set "outfit" to false, just answer, and pick "none" everywhere. Never change their outfit when they didn't ask
+  for one. If it sounds like they might want one, offer it.
+  Example: "going to a wedding on saturday" is a plan, not a request. Answer and offer to pick something.
 
 When you make an outfit:
 - For each slot you get the pieces allowed there. Pick one per slot by id.
@@ -84,7 +90,7 @@ function strings(list) {
 }
 
 router.post("/ai/outfit", async (req, res) => {
-  const { request, temp, slots, current, person } = req.body;
+  const { request, temp, slots, current, person, opening } = req.body;
 
   if (!process.env.GEMINI_API_KEY) {
     return res.status(503).json({ message: "AI is not set up" });
@@ -102,6 +108,7 @@ router.post("/ai/outfit", async (req, res) => {
   }
 
   const input = JSON.stringify({
+    opening: opening === true,
     request: typeof request === "string" ? request.slice(0, 300) : "",
     temperatureC: temp,
     person: {

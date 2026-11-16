@@ -58,6 +58,8 @@ export const STORAGE = {
   outfit: "styleai.outfit.v1",
   consent: "styleai.consent.v1",
   remember: "styleai.remember.v1",
+  // The day Stella last picked an outfit on her own, so it's once a day
+  outfitDay: "styleai.outfitday.v1",
 };
 
 // Without consent, things are only kept until the tab is closed.
