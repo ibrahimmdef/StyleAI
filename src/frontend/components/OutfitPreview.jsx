@@ -25,7 +25,7 @@ export default function OutfitPreview({
   return (
     // Frosted, blurry card: soft color spots behind, so white and gray pieces stand out.
     // isolate keeps the -z-10 spots inside this card.
-    <section className="relative isolate flex min-w-0 flex-col overflow-hidden rounded-2xl border border-white bg-linear-to-br from-selected via-canvas to-white p-4 shadow-soft sm:p-6">
+    <section className="relative isolate flex min-w-0 flex-col overflow-hidden rounded-2xl border border-surface bg-linear-to-br from-selected via-canvas to-surface p-4 shadow-soft sm:p-6">
       <span className="absolute -top-24 -left-24 -z-10 size-96 rounded-full bg-brand/20 blur-3xl" />
       <span className="absolute top-1/3 -right-32 -z-10 size-96 rounded-full bg-ink/10 blur-3xl" />
       <span className="absolute -bottom-32 left-1/4 -z-10 size-80 rounded-full bg-brand/10 blur-3xl" />

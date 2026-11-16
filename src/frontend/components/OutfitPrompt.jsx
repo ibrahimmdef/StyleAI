@@ -60,7 +60,7 @@ export default function OutfitPrompt({
                     <Sparkles size={14} />
                   </span>
                   <p
-                    className={`rounded-2xl rounded-tl-md bg-white px-4 py-2 whitespace-pre-line ${
+                    className={`rounded-2xl rounded-tl-md bg-surface px-4 py-2 whitespace-pre-line ${
                       message.answer ? "" : "animate-pulse text-muted"
                     }`}
                   >
@@ -79,7 +79,7 @@ export default function OutfitPrompt({
           {pinned.map((item) => (
             <span
               key={item.id}
-              className="flex items-center gap-1.5 rounded-lg border border-line bg-white py-1 pr-1 pl-1 text-xs"
+              className="flex items-center gap-1.5 rounded-lg border border-line bg-surface py-1 pr-1 pl-1 text-xs"
             >
               <img
                 src={fileUrl(item.image)}
@@ -117,7 +117,7 @@ export default function OutfitPrompt({
           type="button"
           onClick={() => setPickerOpen(!pickerOpen)}
           aria-label="Add pieces from your wardrobe"
-          className={`${roundButton} border border-line bg-white text-brand hover:bg-selected`}
+          className={`${roundButton} border border-line bg-surface text-brand hover:bg-selected`}
         >
           <Plus size={16} />
         </button>
@@ -137,7 +137,7 @@ export default function OutfitPrompt({
 
       {/* Wardrobe picker, opens above the box */}
       {pickerOpen && (
-        <div className="absolute bottom-full left-0 z-10 mb-2 w-full max-w-sm rounded-2xl border border-line bg-white p-3 shadow-lg">
+        <div className="absolute bottom-full left-0 z-10 mb-2 w-full max-w-sm rounded-2xl border border-line bg-surface p-3 shadow-lg">
           <div className="mb-2 flex items-center justify-between">
             <p className="text-sm font-medium">Must include</p>
             <button

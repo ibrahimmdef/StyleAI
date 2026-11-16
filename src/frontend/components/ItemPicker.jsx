@@ -3,7 +3,7 @@ import { Check, Search, Shirt, X } from "lucide-react";
 import { OPTIONAL_SLOTS, SLOT_LABELS } from "../data";
 import { fileUrl } from "../api";
 
-const card = "relative rounded-xl border bg-white p-2 text-left transition";
+const card = "relative rounded-xl border bg-surface p-2 text-left transition";
 
 // Swap one piece of the outfit. Tapping a piece puts it in right away.
 export default function ItemPicker({
@@ -31,7 +31,7 @@ export default function ItemPicker({
     // The dark background closes it, the white box doesn't
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/25 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/25 p-4 dark:bg-black/60"
     >
       <section
         onClick={(e) => e.stopPropagation()}
@@ -50,7 +50,7 @@ export default function ItemPicker({
         </header>
 
         {/* Search */}
-        <label className="mt-4 flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-muted">
+        <label className="mt-4 flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2.5 text-muted">
           <Search size={16} />
           <input
             autoFocus

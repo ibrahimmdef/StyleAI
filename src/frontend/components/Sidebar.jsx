@@ -52,7 +52,7 @@ export default function Sidebar({ profile }) {
   const name = profile?.name || "User";
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-[205px] flex-col border-r border-line/70 bg-[linear-gradient(145deg,#f7fbff,#eff7ff)] px-4 pt-6 pb-5 lg:flex xl:w-[220px]">
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-[205px] flex-col border-r border-line/70 bg-linear-to-br from-surface to-canvas px-4 pt-6 pb-5 lg:flex xl:w-[220px]">
       <div className="px-1.5">
         <Brand />
       </div>
@@ -106,7 +106,7 @@ export function MobileNavigation() {
   return (
     <nav
       aria-label="Mobile navigation"
-      className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t border-line bg-white/95 px-2 pt-2 pb-[max(10px,env(safe-area-inset-bottom))] backdrop-blur-lg lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t border-line bg-surface/95 px-2 pt-2 pb-[max(10px,env(safe-area-inset-bottom))] backdrop-blur-lg lg:hidden"
     >
       {links.map(({ to, label, mobileLabel, icon: Icon, end }) => (
         <NavLink

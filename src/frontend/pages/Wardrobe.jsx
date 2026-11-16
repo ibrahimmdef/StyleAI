@@ -61,20 +61,20 @@ export default function Wardrobe() {
   if (sortBy !== "Name") filteredClothes.reverse();
 
   return (
-    <div className="min-h-[70vh] rounded-2xl border border-line bg-white p-6">
+    <div className="min-h-[70vh] rounded-2xl border border-line bg-surface p-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-3xl font-bold tracking-tight text-ink">
             My Wardrobe
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted">
             Your personal clothing collection.
           </p>
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-line px-3 sm:w-80 sm:flex-none">
-            <Search size={18} className="shrink-0 text-slate-500" />
+            <Search size={18} className="shrink-0 text-muted" />
             <input
               type="text"
               value={search}
@@ -109,7 +109,7 @@ export default function Wardrobe() {
       </div>
 
       {filteredClothes.length === 0 ? (
-        <p className="mt-10 text-center text-slate-500">
+        <p className="mt-10 text-center text-muted">
           {clothes.length === 0
             ? "Your wardrobe is empty. Add your first item."
             : "No items match your filters."}

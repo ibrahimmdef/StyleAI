@@ -37,7 +37,7 @@ const TABS = [
   "jewelry",
 ];
 
-const card = "rounded-2xl border border-line bg-white p-4 sm:p-6";
+const card = "rounded-2xl border border-line bg-surface p-4 sm:p-6";
 const label = "text-sm font-medium";
 
 // Same page for /outfits/new and /outfits/:id/edit
@@ -162,7 +162,7 @@ export default function BuildOutfit() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Weekend Neutrals"
-            className="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm font-medium outline-none focus:border-brand"
+            className="mt-2 w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm font-medium outline-none focus:border-brand"
           />
         </label>
         <div>

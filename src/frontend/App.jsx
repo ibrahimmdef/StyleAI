@@ -47,8 +47,8 @@ function AppLayout() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,#e6f2ff_0%,#f2f8ff_55%,#eaf4ff_100%)]  4xl:px-7 4xl:py-12">
-      <div className="app-container flex min-h-[calc(100dvh-96px)] overflow-hidden rounded-2xl border border-white/90 bg-white/65 shadow-soft">
+    <div className="min-h-screen bg-linear-to-br from-selected/70 via-canvas to-canvas 4xl:px-7 4xl:py-12">
+      <div className="app-container flex min-h-[calc(100dvh-96px)] overflow-hidden rounded-2xl border border-surface/90 bg-surface/65 shadow-soft">
         <Sidebar profile={profile} />
 
         <main
@@ -66,7 +66,7 @@ function AppLayout() {
 
 function PlaceholderPage({ title }) {
   return (
-    <section className="flex min-h-[70vh] flex-col items-center justify-center rounded-2xl border border-line bg-white p-8 text-center">
+    <section className="flex min-h-[70vh] flex-col items-center justify-center rounded-2xl border border-line bg-surface p-8 text-center">
       <Construction className="mb-5 text-brand" size={36} strokeWidth={1.4} />
       <h1 className="text-2xl font-semibold">{title}</h1>
       <p className="mt-3 max-w-sm text-sm leading-6 text-muted">

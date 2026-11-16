@@ -11,7 +11,7 @@ export default function ClothingCard({ item, onDelete }) {
   return (
     <article
       onMouseLeave={() => setMenuOpen(false)}
-      className="relative rounded-2xl border border-line bg-white p-3"
+      className="relative rounded-2xl border border-line bg-surface p-3"
     >
       {/* Three dots menu */}
       <button
@@ -24,7 +24,7 @@ export default function ClothingCard({ item, onDelete }) {
       </button>
 
       {menuOpen && (
-        <div className="absolute top-10 right-2 z-10 w-32 rounded-xl border border-line bg-white py-1 text-sm shadow-lg">
+        <div className="absolute top-10 right-2 z-10 w-32 rounded-xl border border-line bg-surface py-1 text-sm shadow-lg">
           <Link
             to={`/wardrobe/${item.id}/edit`}
             className={`${menuItem} hover:bg-selected`}

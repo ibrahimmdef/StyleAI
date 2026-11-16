@@ -213,7 +213,7 @@ function OutfitCard({
   return (
     <article
       onMouseLeave={() => setMenuOpen(false)}
-      className="relative rounded-2xl border border-line bg-white p-4"
+      className="relative rounded-2xl border border-line bg-surface p-4"
     >
       {/* Heart and menu sit on top of the picture */}
       <div className="absolute top-3 right-3 z-10 flex gap-1">
@@ -283,7 +283,7 @@ function OutfitCard({
       </div>
 
       {menuOpen && (
-        <div className="absolute top-12 right-3 z-20 w-36 rounded-xl border border-line bg-white py-1 text-sm shadow-lg">
+        <div className="absolute top-12 right-3 z-20 w-36 rounded-xl border border-line bg-surface py-1 text-sm shadow-lg">
           <button
             type="button"
             onClick={onWear}

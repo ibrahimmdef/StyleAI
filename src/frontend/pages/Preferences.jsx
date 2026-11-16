@@ -62,7 +62,7 @@ const STYLE_CARDS = [
   },
 ];
 
-const card = "rounded-2xl border border-line bg-white p-5";
+const card = "rounded-2xl border border-line bg-surface p-5";
 const box = "rounded-xl bg-canvas/60 p-4";
 
 // Adds the value if it's missing, takes it out if it's there
@@ -76,7 +76,7 @@ function toggle(list, value) {
 function chip(active) {
   return `rounded-xl border px-4 py-2 text-sm transition ${
     active
-      ? "border-brand bg-white text-brand"
+      ? "border-brand bg-surface text-brand"
       : "border-transparent bg-selected text-muted hover:text-brand"
   }`;
 }
@@ -252,7 +252,7 @@ export default function Preferences() {
 
           <div className={box}>
             <h3 className="text-sm font-medium">Temperature Unit</h3>
-            <div className="mt-3 inline-flex rounded-xl bg-white p-1">
+            <div className="mt-3 inline-flex rounded-xl bg-surface p-1">
               {["C", "F"].map((name) => (
                 <button
                   key={name}

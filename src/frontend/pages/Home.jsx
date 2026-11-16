@@ -436,7 +436,7 @@ export default function Home() {
         role="status"
         aria-live="polite"
         aria-atomic="true"
-        className={`fixed right-4 bottom-24 left-4 z-40 mx-auto flex w-fit max-w-[calc(100%-32px)] items-center gap-2.5 rounded-xl border border-line bg-white px-4 py-3 text-sm shadow-lg transition-all lg:right-8 lg:bottom-7 lg:left-auto ${notice ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"}`}
+        className={`fixed right-4 bottom-24 left-4 z-40 mx-auto flex w-fit max-w-[calc(100%-32px)] items-center gap-2.5 rounded-xl border border-line bg-surface px-4 py-3 text-sm shadow-lg transition-all lg:right-8 lg:bottom-7 lg:left-auto ${notice ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"}`}
       >
         {notice && (
           <>

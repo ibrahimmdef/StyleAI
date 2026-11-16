@@ -25,7 +25,7 @@ export default function CategoryFilter({
             className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm transition ${
               active
                 ? "bg-brand text-white"
-                : "bg-white text-muted hover:bg-selected hover:text-brand"
+                : "bg-surface text-muted hover:bg-selected hover:text-brand"
             }`}
           >
             {category}

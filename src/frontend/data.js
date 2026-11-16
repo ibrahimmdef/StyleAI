@@ -71,13 +71,15 @@ export const STORAGE = {
   remember: "styleai.remember.v1",
   // The day Stella last picked an outfit on her own, so it's once a day
   outfitDay: "styleai.outfitday.v1",
+  theme: "styleai.theme.v1",
 };
 
 // Without consent, things are only kept until the tab is closed.
 // The consent answer always stays, or we'd ask every time.
-// Ticking "Remember me" is the consent for that one.
+// Ticking "Remember me" or flipping dark mode is the consent for that one.
 function storageFor(key) {
-  if (key === STORAGE.consent || key === STORAGE.remember) return localStorage;
+  const asked = [STORAGE.consent, STORAGE.remember, STORAGE.theme];
+  if (asked.includes(key)) return localStorage;
   const consent = JSON.parse(localStorage.getItem(STORAGE.consent));
   return consent?.preferences ? localStorage : sessionStorage;
 }
@@ -112,4 +114,12 @@ export function removeStorage(key) {
   } catch {
     // Storage is blocked, so there's nothing to remove
   }
+}
+
+// "dark", "light", or "" to follow the device setting
+export function applyTheme(theme) {
+  const dark =
+    theme === "dark" ||
+    (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.classList.toggle("dark", dark);
 }

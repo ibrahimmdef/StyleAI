@@ -15,7 +15,7 @@ import { STORAGE, readStorage } from "../data";
 import { API_URL } from "../api";
 
 const cardClass =
-  "rounded-[14px] border border-[#d6eaff] bg-[linear-gradient(145deg,#edf8ff,#dff1ff_50%,#f2faff)] p-5 xl:p-6";
+  "rounded-2xl border border-line bg-linear-to-br from-selected via-canvas to-surface p-5 xl:p-6";
 
 // Turns the weather code (a number) into an icon and a label
 function getWeatherInfo(code) {
@@ -93,7 +93,7 @@ function WeatherSection({ weather, failed, isFallback, unit }) {
           size={18}
           fill="#5977a3"
           strokeWidth={1.5}
-          className="text-[#5977a3]"
+          className="text-muted"
         />
         <span>{isFallback ? "Baku" : "Your location"}</span>
       </div>
@@ -112,13 +112,13 @@ function WeatherSection({ weather, failed, isFallback, unit }) {
           <p className="mt-2 text-[13px]">{label}</p>
           <p className="mt-2 text-xs text-muted">
             H: {toUnit(weather.high, unit)}°{" "}
-            <span className="mx-2 text-[#b0c9e7]">·</span> L:{" "}
+            <span className="mx-2 text-line">·</span> L:{" "}
             {toUnit(weather.low, unit)}°
           </p>
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-3 divide-x divide-[#cfe3f5] border-t border-[#cfe3f5] pt-4">
+      <div className="mt-6 grid grid-cols-3 divide-x divide-line border-t border-line pt-4">
         {weather.hours.map(({ hour, temp, code }) => {
           const { icon: Icon, color } = getWeatherInfo(code);
           return (
@@ -177,7 +177,7 @@ function OutfitReasons({ hasLayer, temp, unit, styles, isEmpty, children }) {
   return (
     <section
       aria-labelledby="outfit-reasons-title"
-      className="flex flex-1 flex-col rounded-[14px] border border-line bg-white/90 p-5 max-sm:order-last xl:p-6"
+      className="flex flex-1 flex-col rounded-2xl border border-line bg-surface/90 p-5 max-sm:order-last xl:p-6"
     >
       <h2 id="outfit-reasons-title" className="text-base font-semibold">
         Why this outfit?
@@ -185,7 +185,7 @@ function OutfitReasons({ hasLayer, temp, unit, styles, isEmpty, children }) {
       <ul className="mt-6 flex flex-col gap-6">
         {reasons.map(({ icon: Icon, text }) => (
           <li key={text} className="flex items-center gap-3.5">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#eaf4ff] text-brand">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-selected text-brand">
               <Icon size={21} strokeWidth={1.6} aria-hidden="true" />
             </span>
             <span className="text-[12px] leading-5 xl:text-[13px]">{text}</span>

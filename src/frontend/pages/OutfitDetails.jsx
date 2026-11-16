@@ -8,7 +8,7 @@ import { API_URL, fileUrl } from "../api";
 
 const API = `${API_URL}/api/outfits`;
 
-const card = "rounded-2xl border border-line bg-white p-4 sm:p-6";
+const card = "rounded-2xl border border-line bg-surface p-4 sm:p-6";
 const tag = "rounded-full bg-selected px-3 py-1 text-xs text-muted";
 
 // A short line under the tags, made from the pieces

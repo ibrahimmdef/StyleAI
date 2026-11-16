@@ -32,8 +32,8 @@ export default function CookieBanner({ onDone }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-ink/20 px-4 pt-4 sm:pt-10">
-      <div className="w-full max-w-md animate-drop-in rounded-2xl border border-line bg-white p-5 shadow-soft">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-ink/20 px-4 dark:bg-black/60 pt-4 sm:pt-10">
+      <div className="w-full max-w-md animate-drop-in rounded-2xl border border-line bg-surface p-5 shadow-soft">
         <div className="flex items-center gap-3">
           <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-selected text-brand">
             <Cookie size={20} strokeWidth={1.6} />

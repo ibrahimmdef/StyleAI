@@ -30,6 +30,23 @@
   }
 }
 
+/* Dark mode: a "dark" class on <html>. Same token names with darker values,
+   so bg-surface, text-ink and the rest switch on their own. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+.dark {
+  color-scheme: dark;
+  --color-canvas: #0d1424;
+  --color-surface: #151e33;
+  --color-ink: #e7edf9;
+  --color-muted: #93a3c4;
+  --color-brand: #4c8dff;
+  --color-brand-hover: #6aa0ff;
+  --color-selected: #1d2a47;
+  --color-line: #27355a;
+  --shadow-soft: 0 8px 32px -16px rgb(0 0 0 / 60%);
+}
+
 @layer base {
   body {
     @apply m-0 min-w-80 bg-canvas font-sans text-ink antialiased;

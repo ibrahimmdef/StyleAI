@@ -8,22 +8,24 @@ import {
   LockKeyhole,
   LogOut,
   MapPin,
+  Moon,
   Pencil,
   ShieldCheck,
   Trash2,
   UserRound,
 } from "lucide-react";
 import { Button } from "../components/Buttons";
+import { STORAGE, applyTheme, writeStorage } from "../data";
 import { getLocation } from "../components/WeatherCard";
 import { API_URL, fileUrl } from "../api";
 
 const API = `${API_URL}/api/profile`;
 const SOON = "Accounts are coming soon.";
 
-const card = "rounded-2xl border border-line bg-white p-5";
+const card = "rounded-2xl border border-line bg-surface p-5";
 const row = "flex items-center gap-4 border-t border-line py-4";
 const input =
-  "mt-1 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm font-normal outline-none focus:border-brand";
+  "mt-1 w-full rounded-xl border border-line bg-surface px-4 py-2.5 text-sm font-normal outline-none focus:border-brand";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -34,6 +36,10 @@ export default function Profile() {
   const [place, setPlace] = useState("Finding your location…");
   const [photo, setPhoto] = useState("");
   const [notifications, setNotifications] = useState(true);
+  // main.jsx already set the theme, so the page tells us which one is on
+  const [isDark, setIsDark] = useState(() =>
+    document.documentElement.classList.contains("dark"),
+  );
   const [unit, setUnit] = useState("C");
   const [isEditing, setIsEditing] = useState(false);
   const [draftName, setDraftName] = useState("");
@@ -125,6 +131,14 @@ export default function Profile() {
     }
   }
 
+  // Saved on this device only, it's about this screen
+  function toggleDark() {
+    const theme = isDark ? "light" : "dark";
+    writeStorage(STORAGE.theme, theme);
+    applyTheme(theme);
+    setIsDark(!isDark);
+  }
+
   function startEdit() {
     setDraftName(name);
     setDraftEmail(email);
@@ -173,7 +187,7 @@ export default function Profile() {
                 {name.charAt(0).toUpperCase()}
               </span>
             )}
-            <span className="absolute inset-0 grid place-items-center rounded-full bg-ink/40 text-white opacity-0 transition group-hover:opacity-100">
+            <span className="absolute inset-0 grid place-items-center rounded-full bg-ink/40 text-white dark:bg-black/50 opacity-0 transition group-hover:opacity-100">
               <Camera size={20} />
             </span>
             <input
@@ -276,6 +290,23 @@ export default function Profile() {
               aria-label="Notifications"
               className={`flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition ${
                 notifications ? "justify-end bg-brand" : "bg-line"
+              }`}
+            >
+              <span className="size-5 rounded-full bg-white shadow" />
+            </button>
+          </div>
+          <div className={row}>
+            <Moon size={22} strokeWidth={1.6} className="shrink-0 text-ink" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium">Dark mode</p>
+              <p className="text-xs text-muted">Easier on the eyes at night.</p>
+            </div>
+            <button
+              type="button"
+              onClick={toggleDark}
+              aria-label="Dark mode"
+              className={`flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition ${
+                isDark ? "justify-end bg-brand" : "bg-line"
               }`}
             >
               <span className="size-5 rounded-full bg-white shadow" />

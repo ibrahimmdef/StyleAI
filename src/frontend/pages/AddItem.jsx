@@ -5,7 +5,7 @@ import { CATEGORIES, COLORS, SEASONS, STYLES } from "../../shared/catalog";
 import { API_URL, fileUrl } from "../api";
 
 const input =
-  "mt-1 w-full rounded-xl border border-line px-3 py-2 outline-none focus:border-blue-500";
+  "mt-1 w-full rounded-xl border border-line px-3 py-2 outline-none focus:border-brand";
 
 // Same form for adding and editing. If the URL has an id, we're editing.
 export default function AddItem() {
@@ -144,22 +144,22 @@ export default function AddItem() {
   const chip = (active) =>
     `flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-sm ${
       active
-        ? "border-blue-200 bg-blue-50 text-blue-700"
-        : "border-line text-slate-600"
+        ? "border-line bg-selected text-brand-hover"
+        : "border-line text-muted"
     }`;
 
   return (
     <div className="mx-auto w-full max-w-6xl p-4 sm:p-6 lg:p-8">
       <Link
         to="/wardrobe"
-        className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+        className="inline-flex items-center gap-2 text-sm font-medium text-brand hover:text-brand-hover"
       >
         <ArrowLeft size={18} /> Back to wardrobe
       </Link>
       <h1 className="mt-3 text-3xl font-bold">
         {isEdit ? "Edit item" : "Add a new item"}
       </h1>
-      <p className="text-slate-500">
+      <p className="text-muted">
         {isEdit
           ? "Fix the details so your outfits come out right."
           : "Add a piece to get better outfit suggestions."}
@@ -167,13 +167,13 @@ export default function AddItem() {
 
       <form
         onSubmit={submit}
-        className="mt-6 rounded-2xl bg-white p-6 shadow-sm"
+        className="mt-6 rounded-2xl bg-surface p-6 shadow-sm"
       >
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           {/* Photo */}
           <div>
             <h3 className="font-semibold">Item photo</h3>
-            <div className="relative mt-2 grid aspect-square place-items-center overflow-hidden rounded-xl border border-line bg-slate-50">
+            <div className="relative mt-2 grid aspect-square place-items-center overflow-hidden rounded-xl border border-line bg-canvas">
               {preview ? (
                 <img
                   src={fileUrl(preview)}
@@ -183,22 +183,20 @@ export default function AddItem() {
                   }`}
                 />
               ) : (
-                <span className="text-sm text-slate-400">No photo yet</span>
+                <span className="text-sm text-muted">No photo yet</span>
               )}
 
               {processing && (
-                <div className="absolute inset-0 grid place-items-center bg-white/40">
+                <div className="absolute inset-0 grid place-items-center bg-surface/40">
                   <div className="flex flex-col items-center gap-2">
-                    <div className="size-10 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600" />
-                    <p className="text-sm text-slate-600">
-                      Removing background...
-                    </p>
+                    <div className="size-10 animate-spin rounded-full border-4 border-line border-t-brand" />
+                    <p className="text-sm text-muted">Removing background...</p>
                   </div>
                 </div>
               )}
             </div>
             <div className="mt-3 flex items-center justify-between gap-3">
-              <p className="text-xs text-slate-500">JPG or PNG · Up to 10 MB</p>
+              <p className="text-xs text-muted">JPG or PNG · Up to 10 MB</p>
               <input
                 ref={fileRef}
                 type="file"
@@ -210,7 +208,7 @@ export default function AddItem() {
                 type="button"
                 disabled={processing}
                 onClick={() => fileRef.current.click()}
-                className="rounded-xl border border-blue-200 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                className="rounded-xl border border-line px-4 py-2 text-sm text-brand hover:bg-selected disabled:opacity-50"
               >
                 {preview ? "Replace photo" : "Add photo"}
               </button>
@@ -263,7 +261,7 @@ export default function AddItem() {
 
             <div>
               <p className="text-sm">
-                Color: <span className="text-slate-500">{color}</span>
+                Color: <span className="text-muted">{color}</span>
               </p>
               <div className="mt-2 flex gap-3">
                 {Object.entries(COLORS).map(([n, hex]) => (
@@ -276,15 +274,13 @@ export default function AddItem() {
                     onClick={() => setColor(n)}
                     style={{ backgroundColor: hex }}
                     className={`grid size-9 place-items-center rounded-full border border-black/10 ${
-                      color === n ? "ring-2 ring-blue-500 ring-offset-2" : ""
+                      color === n ? "ring-2 ring-brand ring-offset-2" : ""
                     }`}
                   >
                     {color === n && (
                       <Check
                         size={16}
-                        className={
-                          n === "White" ? "text-slate-700" : "text-white"
-                        }
+                        className={n === "White" ? "text-ink" : "text-white"}
                       />
                     )}
                   </button>
@@ -340,14 +336,14 @@ export default function AddItem() {
           <button
             type="button"
             onClick={() => navigate("/wardrobe")}
-            className="rounded-xl border border-blue-200 px-5 py-2.5 text-blue-600 hover:bg-blue-50"
+            className="rounded-xl border border-line px-5 py-2.5 text-brand hover:bg-selected"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={processing}
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-white hover:bg-blue-700 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-2.5 text-white hover:bg-brand-hover disabled:opacity-50"
           >
             {isEdit ? (
               <>
