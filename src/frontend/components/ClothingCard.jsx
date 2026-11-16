@@ -44,8 +44,7 @@ export default function ClothingCard({ item, onDelete }) {
         </div>
       )}
 
-      {/* In dark mode the photo gets a light tile, so black clothes don't vanish */}
-      <div className="flex h-40 items-center justify-center rounded-xl dark:bg-ink/20">
+      <div className="flex h-40 items-center justify-center rounded-xl">
         {item.image ? (
           <img
             src={fileUrl(item.image)}

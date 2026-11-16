@@ -82,7 +82,7 @@ export default function ItemPicker({
               <img
                 src={fileUrl(item.image)}
                 alt={item.name}
-                className="h-32 w-full rounded-lg object-contain dark:bg-ink/20"
+                className="h-32 w-full rounded-lg object-contain"
               />
               <p className="mt-2 truncate text-xs font-medium">{item.name}</p>
               <p className="text-xs text-muted">{item.color}</p>

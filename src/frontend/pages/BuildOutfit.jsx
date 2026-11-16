@@ -270,7 +270,7 @@ export default function BuildOutfit() {
                   <img
                     src={fileUrl(item.image)}
                     alt={item.name}
-                    className="aspect-square w-full rounded-lg object-contain dark:bg-ink/20"
+                    className="aspect-square w-full rounded-lg object-contain"
                   />
                   <p className="mt-2 truncate text-xs font-medium">
                     {item.name}

@@ -144,7 +144,7 @@ export default function OutfitDetails() {
                 <img
                   src={fileUrl(item.image)}
                   alt={item.name}
-                  className="size-12 rounded-lg bg-canvas object-contain p-1 dark:bg-ink/20"
+                  className="size-12 rounded-lg bg-canvas object-contain p-1"
                 />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{item.name}</p>
