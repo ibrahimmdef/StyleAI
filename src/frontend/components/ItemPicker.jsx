@@ -1,141 +1,113 @@
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
 import { Check, Search, Shirt, X } from "lucide-react";
-import { Button, IconButton } from "./Buttons";
 import { OPTIONAL_SLOTS, SLOT_LABELS } from "../data";
 import { fileUrl } from "../api";
 
+const card = "relative rounded-xl border bg-white p-2 text-left transition";
+
+// Swap one piece of the outfit. Tapping a piece puts it in right away.
 export default function ItemPicker({
   slot,
   wardrobe,
   currentId,
-  onApply,
+  onPick,
   onClose,
 }) {
-  const [selection, setSelection] = useState(currentId ?? null);
   const [query, setQuery] = useState("");
 
   const items = wardrobe.filter(
     (item) =>
       item.slot === slot &&
-      (item.name ?? "").toLowerCase().includes(query.toLowerCase()),
+      item.name.toLowerCase().includes(query.toLowerCase()),
   );
-  const optional = OPTIONAL_SLOTS.includes(slot);
+  const canLeaveOut = OPTIONAL_SLOTS.includes(slot);
 
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKeyDown = (event) => event.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [onClose]);
+  function pick(id) {
+    onPick(id);
+    onClose();
+  }
 
-  return createPortal(
+  return (
+    // The dark background closes it, the white box doesn't
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/25 p-3 backdrop-blur-sm sm:p-6"
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/25 p-4"
     >
       <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="item-picker-title"
-        className="flex max-h-[90dvh] w-full max-w-[650px] flex-col overflow-hidden rounded-2xl border border-white bg-[#f8fbff] shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+        className="flex max-h-dvh w-full max-w-2xl flex-col rounded-2xl bg-canvas p-5 shadow-soft"
       >
-        <header className="flex items-center gap-4 border-b border-line bg-white px-5 py-4 sm:px-6">
-          <div className="mr-auto">
-            <h2 id="item-picker-title" className="text-lg font-semibold">
-              Change {SLOT_LABELS[slot]}
-            </h2>
-            <p className="mt-1 text-xs text-muted">
-              A different piece. Still your style.
-            </p>
-          </div>
-          <IconButton label="Close item picker" icon={X} onClick={onClose} />
+        <header className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Change {SLOT_LABELS[slot]}</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="rounded-full p-1.5 text-muted hover:bg-selected hover:text-brand"
+          >
+            <X size={18} />
+          </button>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-6">
-          <label className="mb-5 flex items-center gap-2.5 rounded-xl border border-line bg-white px-3.5 py-3 text-muted">
-            <Search size={17} aria-hidden="true" />
-            <input
-              autoFocus
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              aria-label="Search matching wardrobe items"
-              placeholder="Search your wardrobe…"
-              className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-muted/65 focus-visible:outline-none"
-            />
-          </label>
+        {/* Search */}
+        <label className="mt-4 flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-muted">
+          <Search size={16} />
+          <input
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search your wardrobe…"
+            className="flex-1 bg-transparent text-sm text-ink outline-none"
+          />
+        </label>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {items.map((item) => (
-              <button
-                type="button"
-                key={item.id}
-                aria-pressed={selection === item.id}
-                onClick={() => setSelection(item.id)}
-                className={`relative flex flex-col rounded-xl border bg-white p-3 text-left transition hover:border-brand/50 ${selection === item.id ? "border-brand ring-2 ring-brand/15" : "border-line"}`}
-              >
-                {selection === item.id && (
-                  <span className="absolute top-2 right-2 flex size-5 items-center justify-center rounded-full bg-brand text-white">
-                    <Check size={12} aria-hidden="true" />
-                  </span>
-                )}
-                <img
-                  src={fileUrl(item.image)}
-                  alt=""
-                  className="mb-3 h-36 w-full object-contain"
-                />
-                <span className="text-xs leading-5 font-medium">
-                  {item.name}
+        {/* Pieces */}
+        <div className="mt-4 grid grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-3">
+          {items.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => pick(item.id)}
+              className={`${card} ${
+                item.id === currentId
+                  ? "border-brand ring-1 ring-brand"
+                  : "border-line hover:border-brand/40"
+              }`}
+            >
+              {item.id === currentId && (
+                <span className="absolute top-2 right-2 grid size-5 place-items-center rounded-full bg-brand text-white">
+                  <Check size={12} />
                 </span>
-                <span className="mt-1 text-[11px] text-muted">
-                  {item.category} · {item.color}
-                </span>
-              </button>
-            ))}
+              )}
+              <img
+                src={fileUrl(item.image)}
+                alt={item.name}
+                className="h-32 w-full object-contain"
+              />
+              <p className="mt-2 truncate text-xs font-medium">{item.name}</p>
+              <p className="text-xs text-muted">{item.color}</p>
+            </button>
+          ))}
 
-            {optional && !query && (
-              <button
-                type="button"
-                aria-pressed={selection === null}
-                onClick={() => setSelection(null)}
-                className={`flex min-h-52 flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-4 text-center text-sm ${selection === null ? "border-brand bg-selected/40 text-brand" : "border-line bg-white text-muted"}`}
-              >
-                <Shirt size={30} strokeWidth={1.3} aria-hidden="true" />
-                {slot === "outerwear" ? "Without a layer" : "Leave it out"}
-                {selection === null && <Check size={16} aria-hidden="true" />}
-              </button>
-            )}
-          </div>
-
-          {items.length === 0 && (
-            <p className="py-10 text-center text-sm text-muted">
-              No matching pieces. Try another search.
-            </p>
+          {/* Optional places can stay empty */}
+          {canLeaveOut && !query && (
+            <button
+              type="button"
+              onClick={() => pick(null)}
+              className={`${card} flex flex-col items-center justify-center gap-2 border-dashed text-sm text-muted hover:border-brand/40 hover:text-brand`}
+            >
+              <Shirt size={28} strokeWidth={1.3} />
+              Leave it out
+            </button>
           )}
         </div>
 
-        <footer className="flex justify-end gap-3 border-t border-line bg-white px-5 py-4 sm:px-6">
-          <Button variant="secondary" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            disabled={selection === (currentId ?? null)}
-            onClick={() => {
-              onApply(slot, selection);
-              onClose();
-            }}
-          >
-            Apply change
-          </Button>
-        </footer>
+        {items.length === 0 && (
+          <p className="py-10 text-center text-sm text-muted">
+            Nothing here. Try another search.
+          </p>
+        )}
       </section>
-    </div>,
-    document.body,
+    </div>
   );
 }

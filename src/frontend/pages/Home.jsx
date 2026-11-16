@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Check, LoaderCircle, Sparkles } from "lucide-react";
 import { Brand } from "../components/Sidebar";
@@ -52,7 +52,6 @@ export default function Home() {
   // The last question and the AI's answer, shown under the prompt box
   const [chat, setChat] = useState(null);
   const [hasOpened, setHasOpened] = useState(false);
-  const closePicker = useCallback(() => setActiveSlot(null), []);
   const noticeTimer = useRef();
 
   useEffect(
@@ -418,8 +417,8 @@ export default function Home() {
           slot={activeSlot}
           wardrobe={wardrobe}
           currentId={outfit[activeSlot]}
-          onApply={changeItem}
-          onClose={closePicker}
+          onPick={(id) => changeItem(activeSlot, id)}
+          onClose={() => setActiveSlot(null)}
         />
       )}
 
