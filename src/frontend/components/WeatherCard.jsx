@@ -11,6 +11,7 @@ import {
   Palette,
   Sun,
 } from "lucide-react";
+import { STORAGE, readStorage } from "../data";
 
 const cardClass =
   "rounded-[14px] border border-[#d6eaff] bg-[linear-gradient(145deg,#edf8ff,#dff1ff_50%,#f2faff)] p-5 xl:p-6";
@@ -41,6 +42,10 @@ function formatHour(h) {
 export function getLocation() {
   const baku = { lat: 40.41, lon: 49.87, isFallback: true };
   return new Promise((resolve) => {
+    // Said no to location in the consent box: don't even ask the browser
+    if (readStorage(STORAGE.consent, {}).location === false) {
+      return resolve(baku);
+    }
     if (!navigator.geolocation) return resolve(baku);
     navigator.geolocation.getCurrentPosition(
       (pos) =>

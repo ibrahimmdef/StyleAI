@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Brand } from "../components/Sidebar";
 import CookieBanner from "../components/CookieBanner";
+import { STORAGE, readStorage, removeStorage, writeStorage } from "../data";
 
 const PROFILE_API = "http://localhost:5000/api/profile";
 
@@ -18,8 +19,13 @@ export default function Login() {
   const navigate = useNavigate();
   const [isSignUp, setIsSignUp] = useState(false);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  // A remembered email fills itself in
+  const [email, setEmail] = useState(() => readStorage(STORAGE.remember, ""));
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(() =>
+    Boolean(readStorage(STORAGE.remember, "")),
+  );
+  const [showConsent, setShowConsent] = useState(false);
   const [error, setError] = useState("");
 
   function switchTo(signUp) {
@@ -27,9 +33,10 @@ export default function Login() {
     setError("");
   }
 
-  async function submit(e) {
+  // signUp comes from the form itself, so the right one is always used
+  async function submit(e, signUp) {
     e.preventDefault();
-    if (isSignUp && !name.trim()) {
+    if (signUp && !name.trim()) {
       setError("Enter your name.");
       return;
     }
@@ -43,7 +50,7 @@ export default function Login() {
     }
 
     // No accounts yet: sign up only puts the name and email on the profile
-    if (isSignUp) {
+    if (signUp) {
       try {
         const profile = await fetch(PROFILE_API).then((res) => res.json());
         const res = await fetch(PROFILE_API, {
@@ -57,6 +64,15 @@ export default function Login() {
         setError(err.message || "Could not create your account.");
         return;
       }
+      // New here: ask about storage and location first, unless already asked
+      if (readStorage(STORAGE.consent, null) === null) {
+        setShowConsent(true);
+        return;
+      }
+    } else if (remember) {
+      writeStorage(STORAGE.remember, email);
+    } else {
+      removeStorage(STORAGE.remember);
     }
     navigate("/");
   }
@@ -66,7 +82,7 @@ export default function Login() {
     const active = isSignUp === signUp;
     return (
       <form
-        onSubmit={submit}
+        onSubmit={(e) => submit(e, signUp)}
         className={`flex flex-col items-center justify-center gap-3 px-8 py-10 text-center transition-opacity duration-700 md:absolute md:top-0 md:h-full md:w-1/2 md:px-12 ${
           signUp ? "md:right-0" : "md:left-0"
         } ${active ? "" : "max-md:hidden md:pointer-events-none md:opacity-0"}`}
@@ -104,12 +120,20 @@ export default function Login() {
         />
 
         {!signUp && (
-          <button
-            type="button"
-            className="mt-1 text-sm text-muted hover:text-brand"
-          >
-            Forgot your password?
-          </button>
+          <div className="mt-1 flex w-full items-center justify-between px-2 text-sm text-muted">
+            <label className="flex cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                className="size-4 accent-brand"
+              />
+              Remember me
+            </label>
+            <button type="button" className="hover:text-brand">
+              Forgot password?
+            </button>
+          </div>
         )}
         {active && error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -186,7 +210,7 @@ export default function Login() {
         </div>
       </div>
 
-      <CookieBanner />
+      {showConsent && <CookieBanner onDone={() => navigate("/")} />}
     </div>
   );
 }

@@ -19,6 +19,15 @@
   --color-selected: #e3efff;
   --color-line: #dce8f8;
   --shadow-soft: 0 8px 32px -16px rgb(52 120 246 / 12%);
+  --animate-drop-in: drop-in 0.4s ease-out;
+
+  /* Slides down from above the screen */
+  @keyframes drop-in {
+    from {
+      opacity: 0;
+      transform: translateY(-2rem);
+    }
+  }
 }
 
 @layer base {

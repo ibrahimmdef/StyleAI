@@ -57,12 +57,14 @@ export function outfitTags(pieces, occasion) {
 export const STORAGE = {
   outfit: "styleai.outfit.v1",
   consent: "styleai.consent.v1",
+  remember: "styleai.remember.v1",
 };
 
 // Without consent, things are only kept until the tab is closed.
-// The consent answer itself always stays, or we'd ask every time.
+// The consent answer always stays, or we'd ask every time.
+// Ticking "Remember me" is the consent for that one.
 function storageFor(key) {
-  if (key === STORAGE.consent) return localStorage;
+  if (key === STORAGE.consent || key === STORAGE.remember) return localStorage;
   const consent = JSON.parse(localStorage.getItem(STORAGE.consent));
   return consent?.preferences ? localStorage : sessionStorage;
 }
@@ -87,5 +89,14 @@ export function writeStorage(key, value) {
     return true;
   } catch {
     return false;
+  }
+}
+
+export function removeStorage(key) {
+  try {
+    localStorage.removeItem(key);
+    sessionStorage.removeItem(key);
+  } catch {
+    // Storage is blocked, so there's nothing to remove
   }
 }

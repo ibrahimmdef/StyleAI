@@ -1,84 +1,102 @@
 import { useState } from "react";
 import { Cookie } from "lucide-react";
-import { STORAGE, readStorage, writeStorage } from "../data";
+import { STORAGE, removeStorage, writeStorage } from "../data";
+import { getLocation } from "./WeatherCard";
 
 const button =
-  "flex-1 rounded-xl px-4 py-2.5 text-sm font-medium transition active:scale-95";
+  "flex-1 rounded-xl px-4 py-2.5 text-sm font-medium transition active:scale-95 disabled:opacity-60";
 
-// Asks once what the app may keep in this browser
-export default function CookieBanner() {
-  const [isOpen, setIsOpen] = useState(
-    () => readStorage(STORAGE.consent, null) === null,
-  );
+// Asks what the app may keep in this browser and if it may use the location.
+// The parent decides when to show it and what happens after (onDone).
+export default function CookieBanner({ onDone }) {
   const [showDetails, setShowDetails] = useState(false);
   const [preferences, setPreferences] = useState(true);
+  const [location, setLocation] = useState(true);
+  const [isAsking, setIsAsking] = useState(false);
 
-  if (!isOpen) return null;
-
-  function answer(allowPreferences) {
+  async function answer(allowPreferences, allowLocation) {
     writeStorage(STORAGE.consent, {
       preferences: allowPreferences,
+      location: allowLocation,
       date: new Date().toISOString(),
     });
     // Said no: take out what was kept before
-    if (!allowPreferences) localStorage.removeItem(STORAGE.outfit);
-    setIsOpen(false);
+    if (!allowPreferences) removeStorage(STORAGE.outfit);
+
+    // Said yes: the browser shows its own location popup now, not later on Home
+    if (allowLocation) {
+      setIsAsking(true);
+      await getLocation();
+    }
+    onDone();
   }
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-50 rounded-2xl border border-line bg-white p-5 shadow-soft sm:left-auto sm:max-w-sm">
-      <div className="flex items-center gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-selected text-brand">
-          <Cookie size={20} strokeWidth={1.6} />
-        </span>
-        <h2 className="font-semibold">Your browser, your choice</h2>
-      </div>
-      <p className="mt-3 text-sm leading-6 text-muted">
-        StyleAI keeps a little data in your browser so today's outfit is still
-        there when you come back. No ads, no tracking.
-      </p>
-
-      {showDetails && (
-        <div className="mt-4 flex flex-col gap-3 rounded-xl bg-canvas/60 p-4">
-          <Choice
-            title="Necessary"
-            text="Remembers this choice. Always on."
-            on
-          />
-          <Choice
-            title="Preferences"
-            text="Keeps today's outfit on this device."
-            on={preferences}
-            onToggle={() => setPreferences(!preferences)}
-          />
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-ink/20 px-4 pt-4 sm:pt-10">
+      <div className="w-full max-w-md animate-drop-in rounded-2xl border border-line bg-white p-5 shadow-soft">
+        <div className="flex items-center gap-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-selected text-brand">
+            <Cookie size={20} strokeWidth={1.6} />
+          </span>
+          <h2 className="font-semibold">Before you start</h2>
         </div>
-      )}
+        <p className="mt-3 text-sm leading-6 text-muted">
+          StyleAI keeps a little data in your browser so today's outfit is still
+          there when you come back, and uses your location for the weather. No
+          ads, no tracking.
+        </p>
 
-      <div className="mt-4 flex gap-2">
+        {showDetails && (
+          <div className="mt-4 flex flex-col gap-3 rounded-xl bg-canvas/60 p-4">
+            <Choice
+              title="Necessary"
+              text="Remembers these choices. Always on."
+              on
+            />
+            <Choice
+              title="Preferences"
+              text="Keeps today's outfit on this device."
+              on={preferences}
+              onToggle={() => setPreferences(!preferences)}
+            />
+            <Choice
+              title="Location"
+              text="Weather for where you are. Off means Baku."
+              on={location}
+              onToggle={() => setLocation(!location)}
+            />
+          </div>
+        )}
+
+        <div className="mt-4 flex gap-2">
+          <button
+            type="button"
+            onClick={() => answer(false, false)}
+            disabled={isAsking}
+            className={`${button} bg-selected text-brand hover:bg-selected/70`}
+          >
+            Necessary only
+          </button>
+          <button
+            type="button"
+            onClick={() => answer(true, true)}
+            disabled={isAsking}
+            className={`${button} bg-brand text-white hover:bg-brand-hover`}
+          >
+            {isAsking ? "Finding you…" : "Accept all"}
+          </button>
+        </div>
         <button
           type="button"
-          onClick={() => answer(false)}
-          className={`${button} bg-selected text-brand hover:bg-selected/70`}
+          onClick={() =>
+            showDetails ? answer(preferences, location) : setShowDetails(true)
+          }
+          disabled={isAsking}
+          className="mt-3 w-full text-center text-xs font-medium text-muted hover:text-brand"
         >
-          Necessary only
-        </button>
-        <button
-          type="button"
-          onClick={() => answer(true)}
-          className={`${button} bg-brand text-white hover:bg-brand-hover`}
-        >
-          Accept all
+          {showDetails ? "Save my choices" : "Customize"}
         </button>
       </div>
-      <button
-        type="button"
-        onClick={() =>
-          showDetails ? answer(preferences) : setShowDetails(true)
-        }
-        className="mt-3 w-full text-center text-xs font-medium text-muted hover:text-brand"
-      >
-        {showDetails ? "Save my choices" : "Customize"}
-      </button>
     </div>
   );
 }
