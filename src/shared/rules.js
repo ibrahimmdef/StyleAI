@@ -12,9 +12,11 @@ export function getSeason(date = new Date()) {
   return "Autumn";
 }
 
-// Is it cold enough for a layer?
-export function needsLayer(temp) {
-  return temp < LAYER_TEMP;
+// Is it cold enough for a layer? coldTolerance is the 1-5 slider on Preferences:
+// 1 wears light, 5 feels the cold. Each step moves the line by 3 degrees,
+// so 1 -> under 12°C, 3 -> under 18°C, 5 -> under 24°C.
+export function needsLayer(temp, coldTolerance = 3) {
+  return temp < LAYER_TEMP + (coldTolerance - 3) * 3;
 }
 
 // Can this item be worn in this season? Items with no seasons work any time.

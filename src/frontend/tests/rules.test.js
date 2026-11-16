@@ -17,6 +17,16 @@ test("cold days need a layer, warm days don't", () => {
   assert.equal(needsLayer(30), false);
 });
 
+test("cold tolerance moves the layer line", () => {
+  // 15°C: someone who wears light skips the jacket, someone who feels the cold doesn't
+  assert.equal(needsLayer(15, 1), false);
+  assert.equal(needsLayer(15, 3), true);
+  assert.equal(needsLayer(15, 5), true);
+  assert.equal(needsLayer(11, 1), true);
+  assert.equal(needsLayer(23, 5), true);
+  assert.equal(needsLayer(24, 5), false);
+});
+
 test("items fit their seasons, items with no seasons fit any", () => {
   assert.equal(fitsSeason({ seasons: ["Winter"] }, "Winter"), true);
   assert.equal(fitsSeason({ seasons: ["Summer"] }, "Winter"), false);

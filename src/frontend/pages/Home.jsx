@@ -33,7 +33,7 @@ export default function Home() {
   const [wardrobe, setWardrobe] = useState([]);
   const [weather, setWeather] = useState(null);
   const [weatherFailed, setWeatherFailed] = useState(false);
-  const [unit, setUnit] = useState("C");
+  const [preferences, setPreferences] = useState(null);
   const [outfit, setOutfit] = useState(() => readStorage(STORAGE.outfit, {}));
   const [saved, setSaved] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -80,12 +80,12 @@ export default function Home() {
       .catch(() => setWeatherFailed(true));
   }, []);
 
-  // °C or °F, picked on the Preferences page
+  // Unit, cold tolerance and the rest, from the Preferences page
   useEffect(() => {
     fetch("http://localhost:5000/api/preferences")
       .then((res) => res.json())
-      .then((data) => setUnit(data.unit))
-      .catch(() => setUnit("C"));
+      .then((data) => setPreferences(data))
+      .catch(() => setPreferences(null));
   }, []);
 
   // Toast message and swapping a piece
@@ -131,7 +131,10 @@ export default function Home() {
 
         let skip = OPTIONAL_SLOTS.includes(slot) && Math.random() < 0.4;
         // Cold: always add a layer. Warm: leave it out.
-        if (slot === "outerwear" && weather) skip = !needsLayer(weather.temp);
+        // How cold is "cold" depends on the person.
+        if (slot === "outerwear" && weather) {
+          skip = !needsLayer(weather.temp, preferences?.coldTolerance);
+        }
 
         next[slot] =
           options.length && !skip
@@ -257,7 +260,7 @@ export default function Home() {
           <WeatherCard
             weather={weather}
             failed={weatherFailed}
-            unit={unit}
+            unit={preferences?.unit}
             hasLayer={Boolean(items.outerwear)}
           >
             {/* Quick shuffle: no text, no pinned pieces */}
