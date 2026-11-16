@@ -9,6 +9,7 @@ import OutfitPrompt from "../components/OutfitPrompt";
 import WeatherCard, { loadWeather } from "../components/WeatherCard";
 import {
   allowedColor,
+  boostColors,
   fitsSeason,
   fitsStyle,
   getSeason,
@@ -150,9 +151,11 @@ export default function Home() {
           skip = !needsLayer(weather.temp, preferences?.coldTolerance);
         }
 
+        // Liked colors have two tickets in the draw
+        const draw = boostColors(options, preferences?.colors);
         next[slot] =
-          options.length && !skip
-            ? options[Math.floor(Math.random() * options.length)].id
+          draw.length && !skip
+            ? draw[Math.floor(Math.random() * draw.length)].id
             : null;
       }
       setOutfit(next);

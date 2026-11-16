@@ -41,3 +41,8 @@ export function preferWhere(items, check) {
   const good = items.filter(check);
   return good.length ? good : items;
 }
+
+// Liked colors get a second ticket in the draw, so they come up about twice as often
+export function boostColors(items, colors = []) {
+  return [...items, ...items.filter((item) => colors.includes(item.color))];
+}

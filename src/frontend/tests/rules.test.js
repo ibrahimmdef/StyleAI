@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   allowedColor,
+  boostColors,
   fitsSeason,
   fitsStyle,
   getSeason,
@@ -67,4 +68,12 @@ test("preferWhere falls back to everything when nothing passes", () => {
     preferWhere(items, (n) => n > 9),
     [1, 2, 3, 4],
   );
+});
+
+test("liked colors go in the draw twice", () => {
+  const black = { color: "Black" };
+  const red = { color: "Red" };
+  assert.deepEqual(boostColors([black, red], ["Red"]), [black, red, red]);
+  assert.deepEqual(boostColors([black, red], []), [black, red]);
+  assert.deepEqual(boostColors([black, red]), [black, red]);
 });
