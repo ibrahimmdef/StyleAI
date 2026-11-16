@@ -10,8 +10,10 @@ const SMALL = ["jewelry", "accessory", "bag"];
 export default function OutfitCanvas({ items, onSwap, disabled }) {
   const small = SMALL.filter((slot) => items[slot]);
 
-  // One piece. size is a full class name, so Tailwind finds it.
-  function piece(slot, size) {
+  // One piece. size and fit are full class names, so Tailwind finds them.
+  // fit pushes the picture to one side of its box, so pieces that belong
+  // together (top and bottom, coat and shoes) sit close instead of far apart.
+  function piece(slot, size, fit = "object-center") {
     return (
       <button
         key={slot}
@@ -25,7 +27,7 @@ export default function OutfitCanvas({ items, onSwap, disabled }) {
         <img
           src={fileUrl(items[slot].image)}
           alt={items[slot].name}
-          className="size-full object-contain"
+          className={`size-full object-contain ${fit}`}
         />
       </button>
     );
@@ -35,16 +37,17 @@ export default function OutfitCanvas({ items, onSwap, disabled }) {
     <div className="flex h-96 justify-center gap-6 sm:h-120">
       {(items.top || items.bottom) && (
         <div className="flex w-1/3 min-w-0 flex-col gap-4">
-          {items.top && piece("top", "flex-2")}
-          {items.bottom && piece("bottom", "flex-3")}
+          {items.top && piece("top", "flex-2", "object-bottom")}
+          {items.bottom && piece("bottom", "flex-3", "object-top")}
         </div>
       )}
 
       {/* Shoes sit under the layer. With no layer they stay at the bottom. */}
       {(items.outerwear || items.shoes) && (
         <div className="flex w-1/3 min-w-0 flex-col justify-end gap-4">
-          {items.outerwear && piece("outerwear", "flex-1")}
-          {items.shoes && piece("shoes", "h-1/4 shrink-0 px-6")}
+          {items.outerwear && piece("outerwear", "flex-1", "object-bottom")}
+          {items.shoes &&
+            piece("shoes", "h-1/4 shrink-0 px-2 sm:px-6", "object-top")}
         </div>
       )}
 
