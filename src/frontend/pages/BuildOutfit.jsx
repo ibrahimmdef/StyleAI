@@ -23,10 +23,19 @@ const EMPTY = {
   shoes: null,
   bag: null,
   accessory: null,
+  jewelry: null,
 };
 
 // Tab order from the design: top, layer, bottoms, shoes, then the small things
-const TABS = ["top", "outerwear", "bottom", "shoes", "bag", "accessory"];
+const TABS = [
+  "top",
+  "outerwear",
+  "bottom",
+  "shoes",
+  "bag",
+  "accessory",
+  "jewelry",
+];
 
 const card = "rounded-2xl border border-line bg-white p-4 sm:p-6";
 const label = "text-sm font-medium";

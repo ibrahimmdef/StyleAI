@@ -1,7 +1,8 @@
 import { CATEGORIES, SEASONS, STYLES } from "../shared/catalog.js";
 import { fitsSeason, getSeason } from "../shared/rules.js";
 
-// Places in an outfit. The order also matters for outfitKey.
+// Places in an outfit. The order also matters for outfitKey,
+// so new places go at the end.
 export const SLOTS = [
   "top",
   "bottom",
@@ -9,10 +10,11 @@ export const SLOTS = [
   "shoes",
   "bag",
   "accessory",
+  "jewelry",
 ];
 
 // These can be left empty
-export const OPTIONAL_SLOTS = ["outerwear", "bag", "accessory"];
+export const OPTIONAL_SLOTS = ["outerwear", "bag", "accessory", "jewelry"];
 
 // Names shown in the UI
 export const SLOT_LABELS = {
@@ -22,16 +24,25 @@ export const SLOT_LABELS = {
   shoes: "shoes",
   bag: "bag",
   accessory: "accessory",
+  jewelry: "jewelry",
 };
 
 // Figures out where a wardrobe item goes in an outfit
+// Rings and necklaces get their own small spot, the other accessories share one
 export function getSlot(item) {
+  if (item.category === "Accessories" && item.type === "Jewelry") {
+    return "jewelry";
+  }
   return CATEGORIES[item.category]?.slot ?? null;
 }
 
 // Turns an outfit into a string so two outfits are easy to compare: "12|34|-|56|-|-"
 export function outfitKey(outfit) {
-  return SLOTS.map((slot) => outfit[slot] ?? "-").join("|");
+  const parts = SLOTS.map((slot) => outfit[slot] ?? "-");
+  // Jewelry came later. Without it, the key stays the same as before,
+  // so outfits saved earlier are still found.
+  if (!outfit.jewelry) parts.pop();
+  return parts.join("|");
 }
 
 // Tags for an outfit: its occasion, styles every piece shares, seasons every piece fits

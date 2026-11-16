@@ -1,4 +1,4 @@
-import { Bookmark, Check, Heart, Plus } from "lucide-react";
+import { Bookmark, Check, Gem, Heart, Plus } from "lucide-react";
 import { Button } from "./Buttons";
 import OutfitCanvas from "./OutfitCanvas";
 import { OPTIONAL_SLOTS, SLOTS, SLOT_LABELS, outfitTags } from "../data";
@@ -17,7 +17,10 @@ export default function OutfitPreview({
   children,
 }) {
   const pieces = SLOTS.map((slot) => items[slot]).filter(Boolean);
-  const missing = OPTIONAL_SLOTS.filter((slot) => !items[slot]);
+  // Jewelry gets its own tiny button, the rest get "Add bag" and so on
+  const missing = OPTIONAL_SLOTS.filter(
+    (slot) => !items[slot] && slot !== "jewelry",
+  );
 
   return (
     <section className="flex min-w-0 flex-col rounded-2xl border border-line bg-white p-4 sm:p-6">
@@ -60,6 +63,19 @@ export default function OutfitPreview({
             <Plus size={14} /> Add {SLOT_LABELS[slot]}
           </button>
         ))}
+        {!items.jewelry && (
+          <button
+            type="button"
+            disabled={isGenerating}
+            onClick={() => onSwap("jewelry")}
+            title="Add jewelry"
+            aria-label="Add jewelry"
+            className="inline-flex items-center rounded-full border border-dashed border-brand/30 p-1.5 text-brand hover:bg-selected"
+          >
+            <Plus size={12} />
+            <Gem size={12} />
+          </button>
+        )}
         <span className="ml-auto text-xs text-muted">
           {pieces.length} pieces
         </span>
