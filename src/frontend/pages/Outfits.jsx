@@ -24,7 +24,7 @@ function tabClass(active) {
 
 // Small season pills
 function seasonClass(active) {
-  return `rounded-full px-5 py-1.5 text-sm transition ${
+  return `shrink-0 rounded-full px-5 py-1.5 text-sm transition ${
     active
       ? "bg-brand/15 text-brand"
       : "bg-selected/60 text-muted hover:text-brand"
@@ -127,7 +127,8 @@ export default function Outfits() {
           ))}
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        {/* Phones: one row you swipe sideways */}
+        <div className="no-scrollbar flex gap-2 overflow-x-auto mask-r-from-85% sm:flex-wrap sm:overflow-visible sm:mask-none">
           {SEASON_FILTERS.map((name) => (
             <button
               key={name}

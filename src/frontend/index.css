@@ -79,6 +79,14 @@
   margin: 0 auto;
 }
 
+/* Sideways-scrolling rows on phones: still scrolls, just no bar */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
