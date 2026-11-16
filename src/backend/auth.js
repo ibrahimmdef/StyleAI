@@ -1,4 +1,5 @@
 import { Router } from "express";
+import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
@@ -9,20 +10,35 @@ const router = Router();
 const COOKIE = "styleai_session";
 const DAY = 24 * 60 * 60 * 1000;
 
-// scrypt is slow on purpose, so guessing passwords takes forever.
-// Saved as "salt:hash", a new random salt for every password.
-function hashPassword(password) {
-  const salt = crypto.randomBytes(16).toString("hex");
-  const hash = crypto.scryptSync(password, salt, 64).toString("hex");
-  return `${salt}:${hash}`;
+// bcrypt is slow on purpose, so guessing passwords takes forever.
+// 12 rounds is about a quarter of a second per try. The salt is saved inside
+// the hash itself ("$2b$12$..."), a new one for every password.
+const ROUNDS = 12;
+
+function makeHash(password) {
+  return bcrypt.hash(password, ROUNDS);
 }
 
-function checkPassword(password, saved) {
-  const [salt, hash] = saved.split(":");
-  if (!salt || !hash) return false;
-  const attempt = crypto.scryptSync(password, salt, 64);
-  // Compares in the same time whether it's right or wrong, so timing gives nothing away
-  return crypto.timingSafeEqual(attempt, Buffer.from(hash, "hex"));
+// bcrypt.compare takes the same time whether the password is right or wrong
+async function checkPassword(password, saved) {
+  if (!saved) return false; // an account from before logins has no password yet
+  return bcrypt.compare(password, saved);
+}
+
+// Checked against when the email doesn't exist, so the answer takes as long
+// as a real check and the timing doesn't tell which emails have accounts
+const NOBODY = bcrypt.hashSync("nobody has this password", ROUNDS);
+
+// bcrypt only looks at the first 72 bytes and quietly drops the rest,
+// so a longer password is refused instead of being cut short
+function passwordProblem(password) {
+  if (typeof password !== "string" || password.length < 8) {
+    return "Password needs at least 8 characters";
+  }
+  if (Buffer.byteLength(password) > 72) {
+    return "Password can be at most 72 characters";
+  }
+  return null;
 }
 
 // Only the hash of the token is stored, see schema.sql
@@ -121,11 +137,8 @@ router.post("/auth/signup", async (req, res) => {
   if (!looksLikeEmail(email)) {
     return res.status(400).json({ message: "Enter a valid email" });
   }
-  if (typeof password !== "string" || password.length < 8) {
-    return res
-      .status(400)
-      .json({ message: "Password needs at least 8 characters" });
-  }
+  const problem = passwordProblem(password);
+  if (problem) return res.status(400).json({ message: problem });
   // A handful of new accounts per address is plenty
   if (tooMany(`signup:${req.ip}`, 10)) return slowDown(res);
 
@@ -146,12 +159,12 @@ router.post("/auth/signup", async (req, res) => {
       userId = found.rows[0].id;
       await pool.query(
         "update users set name = $1, password_hash = $2 where id = $3",
-        [name.trim(), hashPassword(password), userId],
+        [name.trim(), await makeHash(password), userId],
       );
     } else {
       const made = await pool.query(
         `insert into users (email, password_hash, name) values ($1, $2, $3) returning id`,
-        [email, hashPassword(password), name.trim()],
+        [email, await makeHash(password), name.trim()],
       );
       userId = made.rows[0].id;
       await pool.query("insert into preferences (user_id) values ($1)", [
@@ -190,7 +203,12 @@ router.post("/auth/login", async (req, res) => {
     );
     // Same answer for an unknown email and a wrong password,
     // so nobody can find out which emails have accounts
-    if (!rows.length || !checkPassword(password, rows[0].password_hash)) {
+    // Unknown email: still check against NOBODY, so it takes just as long
+    const right = await checkPassword(
+      password,
+      rows.length ? rows[0].password_hash : NOBODY,
+    );
+    if (!rows.length || !right) {
       tooMany(`wrong:${email}`, 5);
       return res.status(401).json({ message: "Wrong email or password" });
     }
@@ -282,11 +300,8 @@ router.post("/auth/reset", async (req, res) => {
   if (typeof token !== "string" || !token) {
     return res.status(400).json({ message: "This link isn't complete" });
   }
-  if (typeof password !== "string" || password.length < 8) {
-    return res
-      .status(400)
-      .json({ message: "Password needs at least 8 characters" });
-  }
+  const problem = passwordProblem(password);
+  if (problem) return res.status(400).json({ message: problem });
   if (tooMany(`reset:${req.ip}`, 20)) return slowDown(res);
 
   try {
@@ -303,7 +318,7 @@ router.post("/auth/reset", async (req, res) => {
 
     const userId = rows[0].user_id;
     await pool.query("update users set password_hash = $1 where id = $2", [
-      hashPassword(password),
+      await makeHash(password),
       userId,
     ]);
     await pool.query("delete from sessions where user_id = $1", [userId]);
@@ -323,11 +338,9 @@ router.post("/auth/password", requireUser, async (req, res) => {
   if (typeof current !== "string" || typeof next !== "string") {
     return res.status(400).json({ message: "Fill in both passwords" });
   }
-  if (next.length < 8) {
-    return res
-      .status(400)
-      .json({ message: "New password needs at least 8 characters" });
-  }
+  const problem = passwordProblem(next);
+  if (problem)
+    return res.status(400).json({ message: `New p${problem.slice(1)}` });
   if (tooMany(`password:${req.userId}`, 5)) return slowDown(res);
 
   try {
@@ -335,12 +348,12 @@ router.post("/auth/password", requireUser, async (req, res) => {
       "select password_hash from users where id = $1",
       [req.userId],
     );
-    if (!checkPassword(current, rows[0].password_hash)) {
+    if (!(await checkPassword(current, rows[0].password_hash))) {
       return res.status(400).json({ message: "Current password is wrong" });
     }
 
     await pool.query("update users set password_hash = $1 where id = $2", [
-      hashPassword(next),
+      await makeHash(next),
       req.userId,
     ]);
     await pool.query(

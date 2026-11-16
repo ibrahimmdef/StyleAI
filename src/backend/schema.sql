@@ -10,7 +10,7 @@ create table if not exists users (
   id bigint generated always as identity primary key,
   -- Always saved in lower case, so "Ali@x.com" and "ali@x.com" are one account
   email text not null unique check (email = lower(email)),
-  -- Never the password itself, only its scrypt hash
+  -- Never the password itself, only its bcrypt hash
   password_hash text not null,
   name text not null,
   photo text not null default '',
