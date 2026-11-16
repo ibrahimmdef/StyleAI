@@ -14,7 +14,7 @@
       "Minimal",
       "Sporty"
     ],
-    "image": "http://localhost:5000/uploads/1793775109583.webp"
+    "image": "/uploads/1793775109583.webp"
   },
   {
     "id": 1793775727584,
@@ -32,7 +32,7 @@
       "Smart casual",
       "Casual"
     ],
-    "image": "http://localhost:5000/uploads/1793775727583.webp"
+    "image": "/uploads/1793775727583.webp"
   },
   {
     "id": 1793776007265,
@@ -48,7 +48,7 @@
       "Casual",
       "Smart casual"
     ],
-    "image": "http://localhost:5000/uploads/1793776007264.webp"
+    "image": "/uploads/1793776007264.webp"
   },
   {
     "id": 1793776409456,
@@ -64,7 +64,7 @@
       "Casual",
       "Smart casual"
     ],
-    "image": "http://localhost:5000/uploads/1793776409455.webp"
+    "image": "/uploads/1793776409455.webp"
   },
   {
     "id": 1793776475673,
@@ -80,7 +80,7 @@
       "Minimal",
       "Smart casual"
     ],
-    "image": "http://localhost:5000/uploads/1793776475672.webp"
+    "image": "/uploads/1793776475672.webp"
   },
   {
     "id": 1793780062496,
@@ -96,7 +96,7 @@
       "Minimal",
       "Sporty"
     ],
-    "image": "http://localhost:5000/uploads/1793780062494.webp"
+    "image": "/uploads/1793780062494.webp"
   },
   {
     "id": 1793781230472,
@@ -111,7 +111,7 @@
       "Smart casual",
       "Minimal"
     ],
-    "image": "http://localhost:5000/uploads/1793781208085.webp"
+    "image": "/uploads/1793781208085.webp"
   },
   {
     "id": 1793781290674,
@@ -130,7 +130,7 @@
       "Minimal",
       "Sporty"
     ],
-    "image": "http://localhost:5000/uploads/1793781269887.webp"
+    "image": "/uploads/1793781269887.webp"
   },
   {
     "id": 1793781337124,
@@ -147,7 +147,7 @@
       "Smart casual",
       "Minimal"
     ],
-    "image": "http://localhost:5000/uploads/1793781316246.webp"
+    "image": "/uploads/1793781316246.webp"
   },
   {
     "id": 1793781382685,
@@ -164,7 +164,7 @@
       "Casual",
       "Minimal"
     ],
-    "image": "http://localhost:5000/uploads/1793781370264.webp"
+    "image": "/uploads/1793781370264.webp"
   },
   {
     "id": 1793781498442,
@@ -181,7 +181,7 @@
       "Smart casual",
       "Minimal"
     ],
-    "image": "http://localhost:5000/uploads/1793781483842.webp"
+    "image": "/uploads/1793781483842.webp"
   },
   {
     "id": 1793781782437,
@@ -198,7 +198,7 @@
       "Casual",
       "Smart casual"
     ],
-    "image": "http://localhost:5000/uploads/1793781776154.webp"
+    "image": "/uploads/1793781776154.webp"
   },
   {
     "id": 1793781819843,
@@ -217,6 +217,6 @@
       "Minimal",
       "Smart casual"
     ],
-    "image": "http://localhost:5000/uploads/1793781805445.webp"
+    "image": "/uploads/1793781805445.webp"
   }
 ]
