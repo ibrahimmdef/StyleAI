@@ -38,8 +38,7 @@ Tests: `cd src/frontend && npm test`
 | Name | What it's for |
 |---|---|
 | `GEMINI_API_KEY` | Stella's outfit suggestions. A free key from [Google AI Studio](https://aistudio.google.com) is enough. Without it, outfits are picked by the built-in rules. |
-| `DATABASE_URL` | Postgres connection, for example a free [Neon](https://neon.com) database. |
-| `DATABASE_URL_UNPOOLED` | The direct (unpooled) address of the same database, used to set up tables and for backups. |
+| `DATABASE_URL` | Your Postgres, for example `postgresql://styleai:password@localhost:5432/styleai`. |
 | `RESEND_API_KEY` | Sends "forgot password" emails through [Resend](https://resend.com). Without it, the email is printed in the backend terminal. |
 | `MAIL_FROM` | Sender of those emails, on a domain verified in Resend. |
 | `APP_URL` | The app's address, used in the reset link. Defaults to `http://127.0.0.1:5173`. |
@@ -48,7 +47,36 @@ Tests: `cd src/frontend && npm test`
 
 | Name | What it's for |
 |---|---|
-| `VITE_API_URL` | Leave it empty. The app calls `/api` on its own address: in development Vite passes those calls to the backend, on the live site Netlify does (`public/_redirects`). That keeps the login cookie on one site. |
+| `VITE_API_URL` | Leave it empty. The app calls `/api` on its own address: in development Vite passes those calls to the backend, on the server the backend serves the app itself. That keeps the login cookie on one site. |
+
+## Running it on your own server
+
+You need Node.js and PostgreSQL on the server.
+
+```bash
+# 1. A database and a user for the app (once)
+sudo -u postgres psql -c "create user styleai with password 'pick-a-password'"
+sudo -u postgres psql -c "create database styleai owner styleai"
+
+# 2. The tables (safe to run again)
+psql "postgresql://styleai:pick-a-password@localhost:5432/styleai" -f src/backend/schema.sql
+
+# 3. Build the app once, the backend serves it
+cd src/frontend && npm install && npm run build
+
+# 4. Settings: copy src/backend/.env.example to src/backend/.env and fill it in,
+#    with DATABASE_URL pointing at the database from step 1
+
+# 5. Start
+cd src/backend && npm install && NODE_ENV=production node server.js
+```
+
+The app is then on port 5000 (or `PORT`). A few things worth knowing:
+
+- Put it behind HTTPS (for example Caddy or nginx in front of port 5000). With `NODE_ENV=production` the login cookie is only sent over HTTPS, so logging in won't work on plain http.
+- Keep it running after you log out of the server with pm2 or a systemd service.
+- Background removal runs on the server and needs about 1–2 GB of free memory.
+- Back up the database with `pg_dump` and the `src/backend/uploads` folder, the photos aren't in the database.
 
 ## Editor setup
 

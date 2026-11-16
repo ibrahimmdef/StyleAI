@@ -1,5 +1,6 @@
 import "dotenv/config";
 import fs from "fs";
+import path from "path";
 import express from "express";
 
 import aiRoutes from "./ai.js";
@@ -41,6 +42,19 @@ app.use("/api", outfitsRoutes);
 app.use("/api", preferencesRoutes);
 app.use("/api", profileRoutes);
 app.use("/api", replicateRoutes);
+
+// On the server the backend also serves the built app (npm run build in src/frontend),
+// so `node server.js` is all it takes and everything is on one address.
+// Pages like /wardrobe all get index.html, the app picks the page itself.
+const APP = path.resolve("../frontend/dist");
+if (fs.existsSync(APP)) {
+  app.use(express.static(APP));
+  app.use((req, res, next) => {
+    if (req.method !== "GET" || req.path.startsWith("/api/")) return next();
+    if (req.path.startsWith("/uploads/")) return next();
+    res.sendFile(path.join(APP, "index.html"));
+  });
+}
 
 // Clear leftover photos on start, then once an hour
 cleanUploads();

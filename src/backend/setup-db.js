@@ -4,8 +4,7 @@ import "dotenv/config";
 import fs from "fs";
 import pg from "pg";
 
-// The direct (unpooled) address is better for changing tables
-const url = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
+const url = process.env.DATABASE_URL;
 if (!url) {
   console.error("DATABASE_URL is missing in .env");
   process.exit(1);
