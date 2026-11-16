@@ -47,7 +47,7 @@ export default function OutfitCanvas({ items, onSwap, disabled }) {
       {(items.outerwear || items.shoes) && (
         <div className="flex w-1/3 min-w-0 flex-col justify-end gap-4">
           {items.outerwear && piece("outerwear", "flex-1")}
-          {items.shoes && piece("shoes", "h-2/5 shrink-0 px-4")}
+          {items.shoes && piece("shoes", "h-1/3 shrink-0 px-6")}
         </div>
       )}
 
