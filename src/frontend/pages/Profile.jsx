@@ -45,6 +45,10 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [draftName, setDraftName] = useState("");
   const [draftEmail, setDraftEmail] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -198,6 +202,36 @@ export default function Profile() {
     }
   }
 
+  async function changePassword() {
+    setMessage("");
+    if (newPassword.length < 8) {
+      setError("New password needs at least 8 characters.");
+      return;
+    }
+    if (newPassword !== repeatPassword) {
+      setError("The new passwords don't match.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/auth/password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ current: currentPassword, next: newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setCurrentPassword("");
+      setNewPassword("");
+      setRepeatPassword("");
+      setChangingPassword(false);
+      setError("");
+      setMessage("Password changed. Other devices are logged out.");
+    } catch (err) {
+      setError(err.message || "Could not change the password.");
+    }
+  }
+
   // Today's outfit on this device belongs to whoever was logged in
   function forgetDevice() {
     removeStorage(STORAGE.outfit);
@@ -325,8 +359,49 @@ export default function Profile() {
             icon={LockKeyhole}
             title="Password & security"
             text="Change your password and manage security."
-            onClick={notReady}
+            onClick={() => setChangingPassword(!changingPassword)}
           />
+          {changingPassword && (
+            <div className="flex flex-col gap-3 border-t border-line py-4">
+              <label className="block text-sm font-medium">
+                Current password
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className={input}
+                />
+              </label>
+              <label className="block text-sm font-medium">
+                New password
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="At least 8 characters"
+                  className={input}
+                />
+              </label>
+              <label className="block text-sm font-medium">
+                New password again
+                <input
+                  type="password"
+                  value={repeatPassword}
+                  onChange={(e) => setRepeatPassword(e.target.value)}
+                  className={input}
+                />
+              </label>
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={() => setChangingPassword(false)}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={changePassword}>Change password</Button>
+              </div>
+            </div>
+          )}
           <SettingRow
             icon={MapPin}
             title="Location & weather"

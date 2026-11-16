@@ -222,6 +222,45 @@ router.post("/auth/logout", async (req, res) => {
   }
 });
 
+// Change password: needs the current one, so nobody can do it on a computer left logged in.
+// Every other session is logged out, the one in use stays.
+router.post("/auth/password", requireUser, async (req, res) => {
+  const { current, next } = req.body;
+
+  if (typeof current !== "string" || typeof next !== "string") {
+    return res.status(400).json({ message: "Fill in both passwords" });
+  }
+  if (next.length < 8) {
+    return res
+      .status(400)
+      .json({ message: "New password needs at least 8 characters" });
+  }
+  if (tooMany(`password:${req.userId}`, 5)) return slowDown(res);
+
+  try {
+    const { rows } = await pool.query(
+      "select password_hash from users where id = $1",
+      [req.userId],
+    );
+    if (!checkPassword(current, rows[0].password_hash)) {
+      return res.status(400).json({ message: "Current password is wrong" });
+    }
+
+    await pool.query("update users set password_hash = $1 where id = $2", [
+      hashPassword(next),
+      req.userId,
+    ]);
+    await pool.query(
+      "delete from sessions where user_id = $1 and token_hash <> $2",
+      [req.userId, sha256(readCookie(req, COOKIE))],
+    );
+    res.json({ message: "Password changed" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Could not change the password" });
+  }
+});
+
 // Deletes the account and everything in it. The database removes the
 // items, outfits, preferences and sessions with it (on delete cascade).
 router.delete("/auth/account", requireUser, async (req, res) => {
