@@ -19,7 +19,7 @@ export default function OutfitCanvas({ items, onSwap, disabled }) {
         disabled={!onSwap || disabled}
         onClick={() => onSwap(slot)}
         title={onSwap ? `Change ${SLOT_LABELS[slot]}` : undefined}
-        className={`min-h-0 rounded-xl p-1 transition enabled:hover:bg-selected/60 ${size}`}
+        className={`relative min-h-0 rounded-xl p-1 transition enabled:hover:bg-white/60 ${size}`}
       >
         <img
           src={fileUrl(items[slot].image)}
@@ -31,9 +31,13 @@ export default function OutfitCanvas({ items, onSwap, disabled }) {
   }
 
   return (
-    <div className="flex h-96 justify-center gap-6 sm:h-120">
+    // Tinted, blurry background so white and gray pieces don't vanish
+    <div className="relative flex h-96 justify-center gap-6 overflow-hidden rounded-2xl bg-linear-to-br from-selected via-canvas to-white p-4 sm:h-120">
+      <span className="absolute -top-16 -left-16 size-64 rounded-full bg-brand/15 blur-3xl" />
+      <span className="absolute -right-20 -bottom-20 size-72 rounded-full bg-ink/10 blur-3xl" />
+
       {(items.top || items.bottom) && (
-        <div className="flex w-1/3 min-w-0 flex-col gap-4">
+        <div className="relative flex w-1/3 min-w-0 flex-col gap-4">
           {items.top && piece("top", "flex-2")}
           {items.bottom && piece("bottom", "flex-3")}
         </div>
@@ -41,7 +45,7 @@ export default function OutfitCanvas({ items, onSwap, disabled }) {
 
       {/* Shoes sit under the layer. With no layer they stay at the bottom. */}
       {(items.outerwear || items.shoes) && (
-        <div className="flex w-1/3 min-w-0 flex-col justify-end gap-4">
+        <div className="relative flex w-1/3 min-w-0 flex-col justify-end gap-4">
           {items.outerwear && piece("outerwear", "flex-1")}
           {items.shoes && piece("shoes", "h-1/4 shrink-0 px-6")}
         </div>
@@ -49,7 +53,7 @@ export default function OutfitCanvas({ items, onSwap, disabled }) {
 
       {/* Small things, spread out */}
       {small.length > 0 && (
-        <div className="flex w-1/4 min-w-0 flex-col justify-around">
+        <div className="relative flex w-1/4 min-w-0 flex-col justify-around">
           {small.map((slot) => piece(slot, "h-20 shrink-0 sm:h-28"))}
         </div>
       )}
