@@ -3,6 +3,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { pool } from "./db.js";
+import { sendMail } from "./mail.js";
 
 const router = Router();
 const COOKIE = "styleai_session";
@@ -219,6 +220,98 @@ router.post("/auth/logout", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Could not log out" });
+  }
+});
+
+// Forgot password, step 1: email a link that works once, for one hour.
+// The answer is the same whether the email has an account or not,
+// so this form can't be used to find out who has one.
+router.post("/auth/forgot", async (req, res) => {
+  const email = String(req.body.email ?? "")
+    .trim()
+    .toLowerCase();
+  const answer = {
+    message:
+      "If that email has an account, we sent a link to reset the password.",
+  };
+
+  if (!looksLikeEmail(email)) {
+    return res.status(400).json({ message: "Enter a valid email" });
+  }
+  // Don't let anyone flood someone's inbox
+  if (tooMany(`forgot:${req.ip}`, 10) || tooMany(`forgot:${email}`, 3)) {
+    return slowDown(res);
+  }
+
+  try {
+    const { rows } = await pool.query(
+      "select id, name from users where email = $1",
+      [email],
+    );
+    if (!rows.length) return res.json(answer);
+
+    // Only the newest link works
+    const token = crypto.randomBytes(32).toString("base64url");
+    await pool.query("delete from password_resets where user_id = $1", [
+      rows[0].id,
+    ]);
+    await pool.query(
+      `insert into password_resets (token_hash, user_id, expires_at)
+       values ($1, $2, now() + interval '1 hour')`,
+      [sha256(token), rows[0].id],
+    );
+
+    const appUrl = process.env.APP_URL || "http://127.0.0.1:5173";
+    await sendMail({
+      to: email,
+      subject: "Reset your StyleAI password",
+      text: `Hi ${rows[0].name},\n\nOpen this link to pick a new password. It works once, for one hour:\n${appUrl}/reset-password?token=${token}\n\nDidn't ask for this? Just ignore this email, nothing changes.\n\nStella from StyleAI`,
+    });
+    res.json(answer);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Could not send the email" });
+  }
+});
+
+// Forgot password, step 2: the link's token and a new password.
+// Logs out every device, then logs in here.
+router.post("/auth/reset", async (req, res) => {
+  const { token, password } = req.body;
+
+  if (typeof token !== "string" || !token) {
+    return res.status(400).json({ message: "This link isn't complete" });
+  }
+  if (typeof password !== "string" || password.length < 8) {
+    return res
+      .status(400)
+      .json({ message: "Password needs at least 8 characters" });
+  }
+  if (tooMany(`reset:${req.ip}`, 20)) return slowDown(res);
+
+  try {
+    const { rows } = await pool.query(
+      `delete from password_resets where token_hash = $1 and expires_at > now()
+       returning user_id`,
+      [sha256(token)],
+    );
+    if (!rows.length) {
+      return res
+        .status(400)
+        .json({ message: "This link has expired or was already used" });
+    }
+
+    const userId = rows[0].user_id;
+    await pool.query("update users set password_hash = $1 where id = $2", [
+      hashPassword(password),
+      userId,
+    ]);
+    await pool.query("delete from sessions where user_id = $1", [userId]);
+    await startSession(res, userId, false);
+    res.json({ message: "Password changed" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Could not reset the password" });
   }
 });
 

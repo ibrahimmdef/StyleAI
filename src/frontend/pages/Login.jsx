@@ -131,7 +131,11 @@ export default function Login() {
               />
               Remember me
             </label>
-            <button type="button" className="hover:text-brand">
+            <button
+              type="button"
+              onClick={() => navigate("/reset-password")}
+              className="hover:text-brand"
+            >
               Forgot password?
             </button>
           </div>

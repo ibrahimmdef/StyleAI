@@ -69,3 +69,11 @@ create table if not exists preferences (
   seasons text[] not null default '{}',
   notifications boolean not null default true
 );
+
+-- "Forgot password" links. Like sessions, only the hash of the token is kept.
+-- A link works once and for one hour.
+create table if not exists password_resets (
+  token_hash text primary key,
+  user_id bigint not null references users (id) on delete cascade,
+  expires_at timestamptz not null
+);

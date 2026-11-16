@@ -40,6 +40,9 @@ Tests: `cd src/frontend && npm test`
 | `GEMINI_API_KEY` | Stella's outfit suggestions. A free key from [Google AI Studio](https://aistudio.google.com) is enough. Without it, outfits are picked by the built-in rules. |
 | `DATABASE_URL` | Postgres connection, for example a free [Neon](https://neon.com) database. |
 | `DATABASE_URL_UNPOOLED` | The direct (unpooled) address of the same database, used to set up tables and for backups. |
+| `RESEND_API_KEY` | Sends "forgot password" emails through [Resend](https://resend.com). Without it, the email is printed in the backend terminal. |
+| `MAIL_FROM` | Sender of those emails, on a domain verified in Resend. |
+| `APP_URL` | The app's address, used in the reset link. Defaults to `http://127.0.0.1:5173`. |
 
 **Frontend** (`src/frontend/.env`, see `.env.example`):
 

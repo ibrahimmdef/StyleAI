@@ -11,6 +11,7 @@ import BuildOutfit from "./pages/BuildOutfit";
 import Preferences from "./pages/Preferences";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 import { API_URL } from "./api";
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
     <Routes>
       {/* Login has no sidebar, so it sits outside the layout */}
       <Route path="login" element={<Login />} />
+      <Route path="reset-password" element={<ResetPassword />} />
       <Route element={<AppLayout />}>
         <Route index element={<Home />} />
         <Route path="wardrobe" element={<Wardrobe />} />
