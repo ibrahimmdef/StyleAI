@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import { Check, LoaderCircle, Sparkles } from "lucide-react";
 import { Brand } from "../components/Sidebar";
 import { Button } from "../components/Buttons";
@@ -18,8 +19,17 @@ import {
   writeStorage,
 } from "../data";
 
+// Morning until noon, afternoon until 6 pm, evening after that
+function greeting(hour) {
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
 // Home page: today's outfit, swapping pieces, generating, saving.
 export default function Home() {
+  // The layout loads the profile, Home only reads the name
+  const { profile } = useOutletContext();
   const [wardrobe, setWardrobe] = useState([]);
   const [weather, setWeather] = useState(null);
   const [weatherFailed, setWeatherFailed] = useState(false);
@@ -221,7 +231,7 @@ export default function Home() {
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-[25px] leading-tight font-semibold tracking-tight sm:text-[28px]">
-            Good morning, User
+            {greeting(new Date().getHours())}, {profile?.name || "there"}
           </h1>
           <p className="mt-1.5 text-[13px] leading-5 text-muted">
             Here’s your outfit recommendation for today.
