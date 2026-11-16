@@ -3,7 +3,11 @@ import { GoogleGenAI } from "@google/genai";
 import { STYLIST } from "../shared/catalog.js";
 
 const router = Router();
-const MODEL = "gemini-3.5-flash-lite";
+// Google's free models get busy now and then ("high demand"). When the first
+// one doesn't answer in time, the next one gets a go, so Stella still replies.
+const MODELS = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite"];
+// Per model: wait at most this long, and no retries of its own (they took ~40s)
+const WAIT = { timeout: 15000, maxRetries: 0 };
 const NONE = "none";
 
 // Our code only removes what must never go in. The taste, and the talking, is the model's job.
@@ -138,20 +142,34 @@ router.post("/ai/outfit", async (req, res) => {
 
   try {
     const client = new GoogleGenAI({});
-    const interaction = await client.interactions.create({
-      model: MODEL,
-      system_instruction: INSTRUCTIONS,
-      input,
-      // The default is "minimal", nearly no thinking. A bit more makes the answers smarter.
-      generation_config: { thinking_level: "medium" },
-      response_format: {
-        type: "text",
-        mime_type: "application/json",
-        schema: buildSchema(filled),
-      },
-      // Don't keep the wardrobe on Google's side
-      store: false,
-    });
+    let interaction = null;
+    let lastError = null;
+    for (const model of MODELS) {
+      try {
+        interaction = await client.interactions.create(
+          {
+            model,
+            system_instruction: INSTRUCTIONS,
+            input,
+            // The default is "minimal", nearly no thinking. A bit more makes the answers smarter.
+            generation_config: { thinking_level: "medium" },
+            response_format: {
+              type: "text",
+              mime_type: "application/json",
+              schema: buildSchema(filled),
+            },
+            // Don't keep the wardrobe on Google's side
+            store: false,
+          },
+          WAIT,
+        );
+        break;
+      } catch (err) {
+        console.error(`AI ERROR (${model}):`, err.message);
+        lastError = err;
+      }
+    }
+    if (!interaction) throw lastError;
 
     const answer = JSON.parse(interaction.output_text);
     const reply = String(answer.reply ?? "");
