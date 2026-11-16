@@ -5,7 +5,7 @@ import { fileUrl } from "../api";
 const SMALL = ["jewelry", "accessory", "bag"];
 
 // The outfit as a flat lay, like the design: top and bottom on the left,
-// the layer with the shoes under it in the middle, small things on the right.
+// the coat with the shoes under it in the middle, small things on the right.
 // Tapping a piece swaps it. Without onSwap nothing can be changed.
 export default function OutfitCanvas({ items, onSwap, disabled }) {
   const small = SMALL.filter((slot) => items[slot]);
@@ -33,27 +33,37 @@ export default function OutfitCanvas({ items, onSwap, disabled }) {
     );
   }
 
+  // A grid with two rows, so pieces on the same row line up:
+  // top next to the coat, bottom next to the shoes. Small things take the right side.
+  // Columns: 3 + 3 + 2 out of 8, or 3 + 3 out of 6.
   return (
-    <div className="flex h-96 justify-center gap-6 sm:h-120">
-      {(items.top || items.bottom) && (
-        <div className="flex w-1/3 min-w-0 flex-col gap-4">
-          {items.top && piece("top", "flex-2", "object-bottom")}
-          {items.bottom && piece("bottom", "flex-3", "object-top")}
-        </div>
-      )}
-
-      {/* Shoes sit under the layer. With no layer they stay at the bottom. */}
-      {(items.outerwear || items.shoes) && (
-        <div className="flex w-1/3 min-w-0 flex-col justify-end gap-4">
-          {items.outerwear && piece("outerwear", "flex-1", "object-bottom")}
-          {items.shoes &&
-            piece("shoes", "h-1/4 shrink-0 px-2 sm:px-6", "object-top")}
-        </div>
-      )}
+    <div
+      className={`grid h-96 grid-rows-2 gap-x-4 gap-y-2 sm:h-120 ${
+        // No small things? Then the clothes get the full width.
+        small.length ? "grid-cols-8" : "grid-cols-6"
+      }`}
+    >
+      {items.top &&
+        piece("top", "col-span-3 col-start-1 row-start-1", "object-bottom")}
+      {items.bottom &&
+        piece("bottom", "col-span-3 col-start-1 row-start-2", "object-top")}
+      {items.outerwear &&
+        piece(
+          "outerwear",
+          "col-span-3 col-start-4 row-start-1",
+          "object-bottom",
+        )}
+      {/* Shoes take the top part of their row, right under the coat */}
+      {items.shoes &&
+        piece(
+          "shoes",
+          "col-span-3 col-start-4 row-start-2 h-3/5 px-2 sm:px-6",
+          "object-top",
+        )}
 
       {/* Small things, spread out */}
       {small.length > 0 && (
-        <div className="flex w-1/4 min-w-0 flex-col justify-around">
+        <div className="col-span-2 col-start-7 row-span-2 row-start-1 flex min-h-0 flex-col justify-around">
           {small.map((slot) => piece(slot, "h-20 shrink-0 sm:h-28"))}
         </div>
       )}
