@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Check, Plus } from "lucide-react";
 import { CATEGORIES, COLORS, SEASONS, STYLES } from "../../shared/catalog";
 import { API_URL, fileUrl } from "../api";
+import Dropdown from "../components/Dropdown";
 
 const input =
   "mt-1 w-full rounded-xl border border-line px-3 py-2 outline-none focus:border-brand";
@@ -230,33 +231,27 @@ export default function AddItem() {
             </label>
 
             <div className="grid grid-cols-2 gap-3">
-              <label className="block text-sm">
+              <div className="text-sm">
                 Category *
-                <select
+                <Dropdown
                   value={category}
-                  onChange={(e) => {
-                    setCategory(e.target.value);
-                    setType(CATEGORIES[e.target.value].types[0]);
+                  options={Object.keys(CATEGORIES)}
+                  onChange={(value) => {
+                    setCategory(value);
+                    setType(CATEGORIES[value].types[0]);
                   }}
                   className={input}
-                >
-                  {Object.keys(CATEGORIES).map((c) => (
-                    <option key={c}>{c}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="block text-sm">
+                />
+              </div>
+              <div className="text-sm">
                 Type
-                <select
+                <Dropdown
                   value={type}
-                  onChange={(e) => setType(e.target.value)}
+                  options={CATEGORIES[category].types}
+                  onChange={setType}
                   className={input}
-                >
-                  {CATEGORIES[category].types.map((t) => (
-                    <option key={t}>{t}</option>
-                  ))}
-                </select>
-              </label>
+                />
+              </div>
             </div>
 
             <div>
