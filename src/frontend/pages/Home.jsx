@@ -49,6 +49,8 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [notice, setNotice] = useState("");
   const [activeSlot, setActiveSlot] = useState(null);
+  // The last question and the AI's answer, shown under the prompt box
+  const [chat, setChat] = useState(null);
   const closePicker = useCallback(() => setActiveSlot(null), []);
   const noticeTimer = useRef();
 
@@ -110,10 +112,13 @@ export default function Home() {
     );
   }
 
-  // Which pieces may go in each slot. Our rules decide this, the AI only picks among them.
+  // What may go in each slot. Only the hard rules apply here: pinned pieces,
+  // avoided colors and a layer when it's cold. Everything else is the AI's call.
   function allowedPieces(pinnedIds) {
-    const season = getSeason();
     const slots = {};
+    const cold = weather
+      ? needsLayer(weather.temp, preferences?.coldTolerance)
+      : false;
 
     for (const slot of SLOTS) {
       // A pinned piece for this slot wins
@@ -126,38 +131,33 @@ export default function Home() {
       }
 
       // Avoided colors never go in. Pinned pieces above still do, the user picked them.
-      const all = wardrobe.filter(
+      const items = wardrobe.filter(
         (item) =>
           item.slot === slot && allowedColor(item, preferences?.avoidColors),
       );
-      // Season first, then the user's styles. Each one only narrows the
-      // list if something is left, so a slot never ends up empty because of it.
-      const inSeason = preferWhere(all, (item) => fitsSeason(item, season));
-      const options = preferWhere(inSeason, (item) =>
-        fitsStyle(item, preferences?.styles),
-      );
-
-      let required = !OPTIONAL_SLOTS.includes(slot);
-      let items = options;
-      // Cold: a layer must go in. Warm: none at all.
-      // How cold is "cold" depends on the person.
-      if (slot === "outerwear" && weather) {
-        required = needsLayer(weather.temp, preferences?.coldTolerance);
-        if (!required) items = [];
-      }
-      slots[slot] = { required, items };
+      // Cold: a layer must go in. Warm: the AI may still add a light one.
+      const required =
+        slot === "outerwear" ? cold : !OPTIONAL_SLOTS.includes(slot);
+      slots[slot] = { required, items, cold };
     }
     return slots;
   }
 
-  // No AI, or it failed: a random pick from the same pieces
+  // No AI, or it failed: our own pick. Without the AI's judgment the rules
+  // are stricter here: season and styles first, liked colors more often.
   function randomPicks(slots) {
+    const season = getSeason();
     const picks = {};
-    for (const [slot, { required, items }] of Object.entries(slots)) {
-      // Optional pieces go in a bit more than half the time
-      const skip = !required && Math.random() < 0.4;
+    for (const [slot, { required, items, cold }] of Object.entries(slots)) {
+      const inSeason = preferWhere(items, (item) => fitsSeason(item, season));
+      const options = preferWhere(inSeason, (item) =>
+        fitsStyle(item, preferences?.styles),
+      );
+      // Optional pieces go in a bit more than half the time. No layer when it's warm.
+      let skip = !required && Math.random() < 0.4;
+      if (slot === "outerwear" && weather && !cold) skip = true;
       // Liked colors have two tickets in the draw
-      const draw = boostColors(items, preferences?.colors);
+      const draw = boostColors(options, preferences?.colors);
       picks[slot] =
         draw.length && !skip
           ? draw[Math.floor(Math.random() * draw.length)].id
@@ -176,6 +176,8 @@ export default function Home() {
     }
 
     setIsGenerating(true);
+    // Question shows right away, the answer fills in when it comes
+    setChat({ question: prompt, answer: null });
     const slots = allowedPieces(pinnedIds);
     try {
       const res = await fetch(`${API_URL}/api/ai/outfit`, {
@@ -185,6 +187,12 @@ export default function Home() {
           request: prompt,
           temp: weather?.temp,
           slots,
+          // Hints, not rules: the AI weighs them against the request
+          person: {
+            styles: preferences?.styles ?? [],
+            likedColors: preferences?.colors ?? [],
+            season: getSeason(),
+          },
           // So the AI gives something new instead of the same outfit again
           current: Object.values(outfit).filter(Boolean),
         }),
@@ -195,10 +203,16 @@ export default function Home() {
       const next = {};
       for (const slot of SLOTS) next[slot] = data.picks[slot] ?? null;
       setOutfit(next);
-      notify(data.reason || "A fresh combination, from your wardrobe.");
+      setChat({
+        question: prompt,
+        answer: data.reply || "Here's a fresh one from your wardrobe.",
+      });
     } catch {
       setOutfit(randomPicks(slots));
-      notify("A fresh combination, from your wardrobe.");
+      setChat({
+        question: prompt,
+        answer: "Here's a fresh one from your wardrobe.",
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -347,6 +361,7 @@ export default function Home() {
           <OutfitPrompt
             wardrobe={wardrobe}
             isGenerating={isGenerating}
+            chat={chat}
             onSubmit={generate}
           />
         </OutfitPreview>

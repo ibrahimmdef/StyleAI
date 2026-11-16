@@ -1,11 +1,18 @@
 import { useState } from "react";
-import { ArrowUp, LoaderCircle, Plus, X } from "lucide-react";
+import { ArrowUp, LoaderCircle, Plus, Sparkles, X } from "lucide-react";
 import { fileUrl } from "../api";
+import { STYLIST } from "../../shared/catalog";
 
 const roundButton = "flex size-8 items-center justify-center rounded-full";
 
-// Ask for an outfit: write what it's for, and pin pieces that must be in it
-export default function OutfitPrompt({ wardrobe, isGenerating, onSubmit }) {
+// Ask for an outfit: write what it's for, and pin pieces that must be in it.
+// The last question and the AI's answer show inside the box.
+export default function OutfitPrompt({
+  wardrobe,
+  isGenerating,
+  chat,
+  onSubmit,
+}) {
   const [text, setText] = useState("");
   const [pinnedIds, setPinnedIds] = useState([]);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -25,6 +32,8 @@ export default function OutfitPrompt({ wardrobe, isGenerating, onSubmit }) {
     if (isGenerating) return;
     setPickerOpen(false);
     onSubmit(text.trim(), pinnedIds);
+    // Like a chat: the question moves down into the bubble
+    setText("");
   }
 
   return (
@@ -32,6 +41,32 @@ export default function OutfitPrompt({ wardrobe, isGenerating, onSubmit }) {
       onSubmit={submit}
       className="relative mt-5 rounded-2xl border border-line bg-canvas/60 p-3 focus-within:border-brand/40"
     >
+      {/* Last question and the AI's answer, inside the box like a chat */}
+      {chat && (
+        <div className="mb-3 flex flex-col gap-2 border-b border-line pb-3 text-sm">
+          {chat.question && (
+            <p className="max-w-md self-end rounded-2xl rounded-br-md bg-brand px-4 py-2 text-white">
+              {chat.question}
+            </p>
+          )}
+          <div className="flex max-w-md items-start gap-2">
+            <span
+              title={STYLIST}
+              className="grid size-7 shrink-0 place-items-center rounded-full bg-selected text-brand"
+            >
+              <Sparkles size={14} />
+            </span>
+            <p
+              className={`rounded-2xl rounded-tl-md bg-white px-4 py-2 ${
+                chat.answer ? "" : "animate-pulse text-muted"
+              }`}
+            >
+              {chat.answer ?? `${STYLIST} is styling your fit…`}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Pinned pieces */}
       {pinned.length > 0 && (
         <div className="mb-2 flex flex-wrap gap-2">
@@ -67,7 +102,7 @@ export default function OutfitPrompt({ wardrobe, isGenerating, onSubmit }) {
           if (e.key === "Enter" && !e.shiftKey) submit(e);
         }}
         rows={2}
-        placeholder="What's the plan? e.g. dinner tonight, something smart"
+        placeholder={`Style with ${STYLIST}: dinner tonight, something smart…`}
         className="w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted"
       />
 

@@ -69,3 +69,6 @@ export function checkItem(item) {
     return "Unknown style.";
   return null;
 }
+
+// The AI stylist's name. The prompt box and the AI's instructions both use it.
+export const STYLIST = "Stella";
