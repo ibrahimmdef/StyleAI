@@ -38,6 +38,7 @@ export const COLORS = {
   Blue: "#1f4e8c",
   Green: "#4b6b3c",
   Red: "#b3261e",
+  Yellow: "#e0a800",
 };
 
 export const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
