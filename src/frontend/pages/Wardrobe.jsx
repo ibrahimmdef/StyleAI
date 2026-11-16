@@ -96,6 +96,7 @@ export default function Wardrobe() {
 
       <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <CategoryFilter
+          clothes={clothes}
           activeCategory={activeCategory}
           onCategoryChange={setActiveCategory}
         />
