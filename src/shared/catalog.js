@@ -17,7 +17,7 @@ export const CATEGORIES = {
   },
   Shoes: {
     slot: "shoes",
-    types: ["Sneakers", "Boots", "Loafers", "Sandals", "Heels"],
+    types: ["Sneakers", "Boots", "Loafers", "Dress shoes", "Sandals", "Heels"],
   },
   Bags: {
     slot: "bag",
