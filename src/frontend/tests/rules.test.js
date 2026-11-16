@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { fitsSeason, getSeason, needsLayer } from "../../shared/rules.js";
+import {
+  allowedColor,
+  fitsSeason,
+  getSeason,
+  needsLayer,
+} from "../../shared/rules.js";
 
 test("months map to the right season", () => {
   assert.equal(getSeason(new Date(2026, 0, 10)), "Winter");
@@ -32,4 +37,12 @@ test("items fit their seasons, items with no seasons fit any", () => {
   assert.equal(fitsSeason({ seasons: ["Summer"] }, "Winter"), false);
   assert.equal(fitsSeason({ seasons: [] }, "Winter"), true);
   assert.equal(fitsSeason({}, "Winter"), true);
+});
+
+test("avoided colors are left out", () => {
+  const red = { color: "Red" };
+  assert.equal(allowedColor(red, ["Red", "Brown"]), false);
+  assert.equal(allowedColor(red, ["Brown"]), true);
+  assert.equal(allowedColor(red, []), true);
+  assert.equal(allowedColor(red), true);
 });

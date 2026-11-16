@@ -23,3 +23,8 @@ export function needsLayer(temp, coldTolerance = 3) {
 export function fitsSeason(item, season) {
   return !item.seasons?.length || item.seasons.includes(season);
 }
+
+// Pieces in a color the user avoids are left out. Nothing avoided, everything goes.
+export function allowedColor(item, avoidColors = []) {
+  return !avoidColors.includes(item.color);
+}

@@ -7,7 +7,12 @@ import OutfitPreview from "../components/OutfitPreview";
 import ItemPicker from "../components/ItemPicker";
 import OutfitPrompt from "../components/OutfitPrompt";
 import WeatherCard, { loadWeather } from "../components/WeatherCard";
-import { fitsSeason, getSeason, needsLayer } from "../../shared/rules";
+import {
+  allowedColor,
+  fitsSeason,
+  getSeason,
+  needsLayer,
+} from "../../shared/rules";
 import {
   OPTIONAL_SLOTS,
   SLOTS,
@@ -124,7 +129,11 @@ export default function Home() {
           continue;
         }
 
-        const all = wardrobe.filter((item) => item.slot === slot);
+        // Avoided colors never go in. Pinned pieces above still do, the user picked them.
+        const all = wardrobe.filter(
+          (item) =>
+            item.slot === slot && allowedColor(item, preferences?.avoidColors),
+        );
         const inSeason = all.filter((item) => fitsSeason(item, season));
         // Nothing for this season? Better something than an empty slot
         const options = inSeason.length ? inSeason : all;
