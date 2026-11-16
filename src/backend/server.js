@@ -1,4 +1,5 @@
 import "dotenv/config";
+import fs from "fs";
 import express from "express";
 import cors from "cors";
 
@@ -15,6 +16,8 @@ const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+// Photos go here. Git doesn't keep empty folders, so make it on a fresh copy.
+fs.mkdirSync("uploads", { recursive: true });
 app.use("/uploads", express.static("uploads"));
 
 app.use("/api", aiRoutes);

@@ -19,11 +19,8 @@
       "../shared"
     ],
     "ignore": [
-      "items.json",
-      "outfits.json",
-      "preferences.json",
-      "profile.json",
-      "uploads/*"
+      "uploads/*",
+      "archive/*"
     ]
   },
   "dependencies": {
