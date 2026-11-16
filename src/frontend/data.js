@@ -56,7 +56,16 @@ export function outfitTags(pieces, occasion) {
 // Only today's outfit stays in the browser. Saved outfits live on the backend.
 export const STORAGE = {
   outfit: "styleai.outfit.v1",
+  consent: "styleai.consent.v1",
 };
+
+// Without consent, things are only kept until the tab is closed.
+// The consent answer itself always stays, or we'd ask every time.
+function storageFor(key) {
+  if (key === STORAGE.consent) return localStorage;
+  const consent = JSON.parse(localStorage.getItem(STORAGE.consent));
+  return consent?.preferences ? localStorage : sessionStorage;
+}
 
 // A name to start with, like "Friday autumn look". It can be renamed later.
 export function defaultOutfitName(date = new Date()) {
@@ -66,7 +75,7 @@ export function defaultOutfitName(date = new Date()) {
 
 export function readStorage(key, fallback) {
   try {
-    return JSON.parse(localStorage.getItem(key)) ?? fallback;
+    return JSON.parse(storageFor(key).getItem(key)) ?? fallback;
   } catch {
     return fallback;
   }
@@ -74,7 +83,7 @@ export function readStorage(key, fallback) {
 
 export function writeStorage(key, value) {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
+    storageFor(key).setItem(key, JSON.stringify(value));
     return true;
   } catch {
     return false;

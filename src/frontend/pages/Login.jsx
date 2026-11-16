@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Brand } from "../components/Sidebar";
+import CookieBanner from "../components/CookieBanner";
 
 const PROFILE_API = "http://localhost:5000/api/profile";
 
@@ -132,8 +133,14 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center gap-8 bg-canvas px-4 py-10">
-      <Brand />
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-linear-to-br from-selected via-canvas to-white px-4 pt-24 pb-40 md:py-24">
+      {/* Two soft blurred circles behind the card */}
+      <span className="absolute -top-32 -right-24 size-96 rounded-full bg-brand/25 blur-3xl" />
+      <span className="absolute -bottom-40 -left-32 size-120 rounded-full bg-brand/15 blur-3xl" />
+
+      <div className="absolute top-6 left-6 sm:top-8 sm:left-10">
+        <Brand />
+      </div>
 
       <div className="relative w-full max-w-3xl overflow-hidden rounded-3xl border border-white bg-white shadow-soft md:h-120">
         {renderForm(false)}
@@ -178,6 +185,8 @@ export default function Login() {
           </div>
         </div>
       </div>
+
+      <CookieBanner />
     </div>
   );
 }
