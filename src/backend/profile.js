@@ -82,8 +82,8 @@ router.post("/profile/photo", upload.single("photo"), async (req, res) => {
       fs.rmSync(old, { force: true });
     }
 
-    const port = process.env.PORT || 5000;
-    profile.photo = `http://localhost:${port}/uploads/${fileName}`;
+    // Only the path. The frontend knows where the server is.
+    profile.photo = `/uploads/${fileName}`;
     writeProfile(profile);
     res.status(201).json(profile);
   } catch (err) {

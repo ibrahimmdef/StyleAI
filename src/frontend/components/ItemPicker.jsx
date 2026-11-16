@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Check, Search, Shirt, X } from "lucide-react";
 import { Button, IconButton } from "./Buttons";
 import { OPTIONAL_SLOTS, SLOT_LABELS } from "../data";
+import { fileUrl } from "../api";
 
 export default function ItemPicker({
   slot,
@@ -85,7 +86,7 @@ export default function ItemPicker({
                   </span>
                 )}
                 <img
-                  src={item.image}
+                  src={fileUrl(item.image)}
                   alt=""
                   className="mb-3 h-36 w-full object-contain"
                 />

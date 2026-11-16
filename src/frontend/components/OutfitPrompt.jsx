@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ArrowUp, LoaderCircle, Plus, X } from "lucide-react";
+import { fileUrl } from "../api";
 
 const roundButton = "flex size-8 items-center justify-center rounded-full";
 
@@ -39,7 +40,11 @@ export default function OutfitPrompt({ wardrobe, isGenerating, onSubmit }) {
               key={item.id}
               className="flex items-center gap-1.5 rounded-lg border border-line bg-white py-1 pr-1 pl-1 text-xs"
             >
-              <img src={item.image} alt="" className="size-6 object-contain" />
+              <img
+                src={fileUrl(item.image)}
+                alt=""
+                className="size-6 object-contain"
+              />
               {item.name}
               <button
                 type="button"
@@ -116,7 +121,7 @@ export default function OutfitPrompt({ wardrobe, isGenerating, onSubmit }) {
                 }`}
               >
                 <img
-                  src={item.image}
+                  src={fileUrl(item.image)}
                   alt={item.name}
                   className="size-full object-contain"
                 />

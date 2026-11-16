@@ -5,7 +5,7 @@ import { Button } from "../components/Buttons";
 import { SLOTS, STORAGE, outfitTags, writeStorage } from "../data";
 import { SEASONS } from "../../shared/catalog";
 import { fitsSeason } from "../../shared/rules";
-import { API_URL } from "../api";
+import { API_URL, fileUrl } from "../api";
 
 const API = `${API_URL}/api/outfits`;
 
@@ -245,7 +245,7 @@ function OutfitCard({
             {column.map((item) => (
               <img
                 key={item.id}
-                src={item.image}
+                src={fileUrl(item.image)}
                 alt={item.name}
                 className="min-h-0 w-full flex-1 object-contain"
               />

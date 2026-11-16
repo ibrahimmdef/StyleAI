@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { EllipsisVertical, Pencil, Trash2 } from "lucide-react";
+import { fileUrl } from "../api";
 
 const menuItem = "flex w-full items-center gap-2 px-3 py-2 text-left";
 
@@ -46,7 +47,7 @@ export default function ClothingCard({ item, onDelete }) {
       <div className="flex h-40 items-center justify-center">
         {item.image ? (
           <img
-            src={item.image}
+            src={fileUrl(item.image)}
             alt={item.name}
             className="h-full w-full object-contain"
           />

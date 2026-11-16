@@ -4,7 +4,7 @@ import { ArrowLeft, ChevronRight, Heart, Pencil, Sparkles } from "lucide-react";
 import { Button } from "../components/Buttons";
 import OutfitCanvas from "../components/OutfitCanvas";
 import { SLOTS, STORAGE, getSlot, outfitTags, writeStorage } from "../data";
-import { API_URL } from "../api";
+import { API_URL, fileUrl } from "../api";
 
 const API = `${API_URL}/api/outfits`;
 
@@ -141,7 +141,7 @@ export default function OutfitDetails() {
                 className="flex items-center gap-3 rounded-xl border border-line p-2 transition hover:border-brand/40"
               >
                 <img
-                  src={item.image}
+                  src={fileUrl(item.image)}
                   alt={item.name}
                   className="size-12 rounded-lg bg-canvas object-contain p-1"
                 />

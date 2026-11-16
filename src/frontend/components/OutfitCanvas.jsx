@@ -1,6 +1,7 @@
 import { ArrowLeftRight } from "lucide-react";
 import { IconButton } from "./Buttons";
 import { SLOTS, SLOT_LABELS } from "../data";
+import { fileUrl } from "../api";
 
 // Clothes grow to fill the free space, small things keep a fixed size
 // so boots don't end up huge. Full class names, so Tailwind can find them.
@@ -33,7 +34,7 @@ export default function OutfitCanvas({ items, onSwap, disabled }) {
           {column.map((slot) => (
             <div key={slot} className={`relative min-h-0 ${SIZES[slot]}`}>
               <img
-                src={items[slot].image}
+                src={fileUrl(items[slot].image)}
                 alt={items[slot].name}
                 className="h-full w-full object-contain"
               />

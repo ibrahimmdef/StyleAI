@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Check, Plus } from "lucide-react";
 import { CATEGORIES, COLORS, SEASONS, STYLES } from "../../shared/catalog";
-import { API_URL } from "../api";
+import { API_URL, fileUrl } from "../api";
 
 const input =
   "mt-1 w-full rounded-xl border border-line px-3 py-2 outline-none focus:border-blue-500";
@@ -176,7 +176,7 @@ export default function AddItem() {
             <div className="relative mt-2 grid aspect-square place-items-center overflow-hidden rounded-xl border border-line bg-slate-50">
               {preview ? (
                 <img
-                  src={preview}
+                  src={fileUrl(preview)}
                   alt="Preview"
                   className={`h-full w-full object-contain transition ${
                     processing ? "blur-md" : ""

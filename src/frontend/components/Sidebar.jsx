@@ -7,6 +7,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { NavLink, Link } from "react-router-dom";
+import { fileUrl } from "../api";
 
 const links = [
   { to: "/", label: "Home", icon: House, end: true },
@@ -80,7 +81,7 @@ export default function Sidebar({ profile }) {
       >
         {profile?.photo ? (
           <img
-            src={profile.photo}
+            src={fileUrl(profile.photo)}
             alt=""
             className="size-10 shrink-0 rounded-full object-cover"
           />

@@ -12,7 +12,7 @@ import {
   getSlot,
   outfitKey,
 } from "../data";
-import { API_URL } from "../api";
+import { API_URL, fileUrl } from "../api";
 
 const API = `${API_URL}/api/outfits`;
 
@@ -258,7 +258,7 @@ export default function BuildOutfit() {
                     </span>
                   )}
                   <img
-                    src={item.image}
+                    src={fileUrl(item.image)}
                     alt={item.name}
                     className="aspect-square w-full object-contain"
                   />

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "../components/Buttons";
 import { getLocation } from "../components/WeatherCard";
-import { API_URL } from "../api";
+import { API_URL, fileUrl } from "../api";
 
 const API = `${API_URL}/api/profile`;
 const SOON = "Accounts are coming soon.";
@@ -164,7 +164,7 @@ export default function Profile() {
           <label className="group relative size-16 shrink-0 cursor-pointer sm:size-24">
             {photo ? (
               <img
-                src={photo}
+                src={fileUrl(photo)}
                 alt={name}
                 className="size-full rounded-full object-cover"
               />

@@ -35,9 +35,9 @@ router.post("/process-image", upload.single("image"), async (req, res) => {
     const fileName = `${Date.now()}.webp`;
     await fs.promises.writeFile(path.join("uploads", fileName), output);
 
-    const port = process.env.PORT || 5000;
     res.status(201).json({
-      image: `http://localhost:${port}/uploads/${fileName}`,
+      // Only the path. The frontend knows where the server is.
+      image: `/uploads/${fileName}`,
     });
   } catch (err) {
     console.error("ERROR:", err);
