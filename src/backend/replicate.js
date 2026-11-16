@@ -32,7 +32,8 @@ router.post("/process-image", upload.single("image"), async (req, res) => {
     // Cut away the empty transparent space around the item
     const output = await sharp(noBg).trim().webp({ quality: 80 }).toBuffer();
 
-    const fileName = `${Date.now()}.webp`;
+    // The owner's id comes first, that's how /uploads knows whose photo it is
+    const fileName = `${req.userId}-${Date.now()}.webp`;
     await fs.promises.writeFile(path.join("uploads", fileName), output);
 
     res.status(201).json({

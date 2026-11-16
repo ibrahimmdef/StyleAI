@@ -78,7 +78,8 @@ router.post("/profile/photo", upload.single("photo"), async (req, res) => {
       .webp({ quality: 80 })
       .toBuffer();
 
-    const fileName = `avatar-${Date.now()}.webp`;
+    // avatar-<owner id>-..., see the /uploads check in server.js
+    const fileName = `avatar-${req.userId}-${Date.now()}.webp`;
     await fs.promises.writeFile(path.join("uploads", fileName), output);
 
     // Throw away the old photo
