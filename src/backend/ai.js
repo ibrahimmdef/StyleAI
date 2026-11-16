@@ -10,6 +10,7 @@ const INSTRUCTIONS = `You style one outfit from a person's own wardrobe.
 For each slot you get the pieces that are allowed there. Pick one piece per slot by its id.
 Slots marked "required" must get a piece. Optional slots can be "none" if the outfit looks better without them.
 Pick pieces whose colors and styles go well together and that suit the person's request, if there is one.
+If a current outfit is given, make the new one clearly different: change at least two pieces when the allowed pieces make that possible.
 Then write one short, friendly sentence (under 20 words) on why the outfit works.`;
 
 // Only these ids (or "none" for optional slots) can come back, so the model can't make up pieces
@@ -33,6 +34,11 @@ function buildSchema(slots) {
   };
 }
 
+// New order every time, so the model doesn't just favor whatever comes first
+function shuffle(list) {
+  return [...list].sort(() => Math.random() - 0.5);
+}
+
 // Just what the model needs to know about a piece, to keep the request small
 function describe(item) {
   return {
@@ -45,7 +51,7 @@ function describe(item) {
 }
 
 router.post("/ai/outfit", async (req, res) => {
-  const { request, temp, slots } = req.body;
+  const { request, temp, slots, current } = req.body;
 
   if (!process.env.GEMINI_API_KEY) {
     return res.status(503).json({ message: "AI is not set up" });
@@ -64,10 +70,11 @@ router.post("/ai/outfit", async (req, res) => {
   const input = JSON.stringify({
     request: typeof request === "string" ? request.slice(0, 300) : "",
     temperatureC: temp,
+    currentOutfit: Array.isArray(current) ? current.map(String) : [],
     slots: Object.fromEntries(
       Object.entries(filled).map(([slot, { required, items }]) => [
         slot,
-        { required: Boolean(required), items: items.map(describe) },
+        { required: Boolean(required), items: shuffle(items).map(describe) },
       ]),
     ),
   });

@@ -181,7 +181,13 @@ export default function Home() {
       const res = await fetch(`${API_URL}/api/ai/outfit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ request: prompt, temp: weather?.temp, slots }),
+        body: JSON.stringify({
+          request: prompt,
+          temp: weather?.temp,
+          slots,
+          // So the AI gives something new instead of the same outfit again
+          current: Object.values(outfit).filter(Boolean),
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
