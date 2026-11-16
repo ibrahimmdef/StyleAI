@@ -19,7 +19,8 @@ export default function OutfitCanvas({ items, onSwap, disabled }) {
         disabled={!onSwap || disabled}
         onClick={() => onSwap(slot)}
         title={onSwap ? `Change ${SLOT_LABELS[slot]}` : undefined}
-        className={`relative min-h-0 rounded-xl p-1 transition enabled:hover:bg-surface/60 ${size}`}
+        // On hover the piece steps forward a little, so it feels picked
+        className={`relative min-h-0 p-1 transition duration-200 enabled:hover:z-10 enabled:hover:scale-108 enabled:hover:drop-shadow-xl ${size}`}
       >
         <img
           src={fileUrl(items[slot].image)}
