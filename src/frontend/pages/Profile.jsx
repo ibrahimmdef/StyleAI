@@ -15,8 +15,9 @@ import {
 } from "lucide-react";
 import { Button } from "../components/Buttons";
 import { getLocation } from "../components/WeatherCard";
+import { API_URL } from "../api";
 
-const API = "http://localhost:5000/api/profile";
+const API = `${API_URL}/api/profile`;
 const SOON = "Accounts are coming soon.";
 
 const card = "rounded-2xl border border-line bg-white p-5";
@@ -50,7 +51,7 @@ export default function Profile() {
 
   // The unit lives in preferences, we only show it here
   useEffect(() => {
-    fetch("http://localhost:5000/api/preferences")
+    fetch(`${API_URL}/api/preferences`)
       .then((res) => res.json())
       .then((data) => setUnit(data.unit));
   }, []);
@@ -63,9 +64,7 @@ export default function Profile() {
   async function findPlace() {
     const { lat, lon, isFallback } = await getLocation();
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/place?lat=${lat}&lon=${lon}`,
-      );
+      const res = await fetch(`${API_URL}/api/place?lat=${lat}&lon=${lon}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
       setPlace(isFallback ? `${data.place} (location off)` : data.place);

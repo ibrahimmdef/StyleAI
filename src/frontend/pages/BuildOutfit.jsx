@@ -12,8 +12,9 @@ import {
   getSlot,
   outfitKey,
 } from "../data";
+import { API_URL } from "../api";
 
-const API = "http://localhost:5000/api/outfits";
+const API = `${API_URL}/api/outfits`;
 
 const EMPTY = {
   top: null,
@@ -44,7 +45,7 @@ export default function BuildOutfit() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/Items")
+    fetch(`${API_URL}/api/Items`)
       .then((res) => res.json())
       .then((data) =>
         setWardrobe(data.map((item) => ({ ...item, slot: getSlot(item) }))),

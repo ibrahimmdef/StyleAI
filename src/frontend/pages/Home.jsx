@@ -27,6 +27,7 @@ import {
   readStorage,
   writeStorage,
 } from "../data";
+import { API_URL } from "../api";
 
 // Morning until noon, afternoon until 6 pm, evening after that
 function greeting(hour) {
@@ -66,7 +67,7 @@ export default function Home() {
 
   // Load the real wardrobe from the backend
   useEffect(() => {
-    fetch("http://localhost:5000/api/Items")
+    fetch(`${API_URL}/api/Items`)
       .then((res) => res.json())
       .then((data) =>
         setWardrobe(data.map((item) => ({ ...item, slot: getSlot(item) }))),
@@ -76,7 +77,7 @@ export default function Home() {
 
   // Saved outfits, so we know if the one on screen is saved or a favorite
   useEffect(() => {
-    fetch("http://localhost:5000/api/outfits")
+    fetch(`${API_URL}/api/outfits`)
       .then((res) => res.json())
       .then((data) => setSaved(data))
       .catch(() => {});
@@ -91,7 +92,7 @@ export default function Home() {
 
   // Unit, cold tolerance and the rest, from the Preferences page
   useEffect(() => {
-    fetch("http://localhost:5000/api/preferences")
+    fetch(`${API_URL}/api/preferences`)
       .then((res) => res.json())
       .then((data) => setPreferences(data))
       .catch(() => setPreferences(null));
@@ -175,7 +176,7 @@ export default function Home() {
   // Sends the outfit on screen to the backend. Returns the saved outfit, or null.
   async function addToSaved(favorite) {
     try {
-      const res = await fetch("http://localhost:5000/api/outfits", {
+      const res = await fetch(`${API_URL}/api/outfits`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -216,14 +217,11 @@ export default function Home() {
     }
 
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/outfits/${savedEntry.id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ favorite: !isFavorite }),
-        },
-      );
+      const res = await fetch(`${API_URL}/api/outfits/${savedEntry.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ favorite: !isFavorite }),
+      });
       if (!res.ok) throw new Error();
       const updated = await res.json();
       setSaved(

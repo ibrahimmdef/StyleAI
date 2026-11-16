@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Brand } from "../components/Sidebar";
 import CookieBanner from "../components/CookieBanner";
 import { STORAGE, readStorage, removeStorage, writeStorage } from "../data";
+import { API_URL } from "../api";
 
-const PROFILE_API = "http://localhost:5000/api/profile";
+const PROFILE_API = `${API_URL}/api/profile`;
 
 const input =
   "w-full rounded-full border border-line bg-canvas/60 px-5 py-3 text-sm outline-none transition focus:-translate-y-0.5 focus:border-brand focus:bg-white focus:shadow-soft";

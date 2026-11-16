@@ -12,6 +12,7 @@ import {
   Sun,
 } from "lucide-react";
 import { STORAGE, readStorage } from "../data";
+import { API_URL } from "../api";
 
 const cardClass =
   "rounded-[14px] border border-[#d6eaff] bg-[linear-gradient(145deg,#edf8ff,#dff1ff_50%,#f2faff)] p-5 xl:p-6";
@@ -201,9 +202,7 @@ function OutfitReasons({ hasLayer, temp, unit, styles, isEmpty, children }) {
 // Location + weather in one go. Home calls this, because the outfit needs the temperature too.
 export async function loadWeather() {
   const { lat, lon, isFallback } = await getLocation();
-  const res = await fetch(
-    `http://localhost:5000/api/weather?lat=${lat}&lon=${lon}`,
-  );
+  const res = await fetch(`${API_URL}/api/weather?lat=${lat}&lon=${lon}`);
   if (!res.ok) throw new Error("Request failed");
   return { ...(await res.json()), isFallback };
 }

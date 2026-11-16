@@ -5,8 +5,9 @@ import { Button } from "../components/Buttons";
 import { SLOTS, STORAGE, outfitTags, writeStorage } from "../data";
 import { SEASONS } from "../../shared/catalog";
 import { fitsSeason } from "../../shared/rules";
+import { API_URL } from "../api";
 
-const API = "http://localhost:5000/api/outfits";
+const API = `${API_URL}/api/outfits`;
 
 const TABS = ["All outfits", "Favorites"];
 const SEASON_FILTERS = ["All", ...SEASONS];
@@ -48,7 +49,7 @@ export default function Outfits() {
 
   // Outfits only store item ids, the photos come from the wardrobe
   useEffect(() => {
-    fetch("http://localhost:5000/api/Items")
+    fetch(`${API_URL}/api/Items`)
       .then((res) => res.json())
       .then((data) => setWardrobe(data));
   }, []);

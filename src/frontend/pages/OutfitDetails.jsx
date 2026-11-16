@@ -4,8 +4,9 @@ import { ArrowLeft, ChevronRight, Heart, Pencil, Sparkles } from "lucide-react";
 import { Button } from "../components/Buttons";
 import OutfitCanvas from "../components/OutfitCanvas";
 import { SLOTS, STORAGE, getSlot, outfitTags, writeStorage } from "../data";
+import { API_URL } from "../api";
 
-const API = "http://localhost:5000/api/outfits";
+const API = `${API_URL}/api/outfits`;
 
 const card = "rounded-2xl border border-line bg-white p-4 sm:p-6";
 const tag = "rounded-full bg-selected px-3 py-1 text-xs text-muted";
@@ -31,7 +32,7 @@ export default function OutfitDetails() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/Items")
+    fetch(`${API_URL}/api/Items`)
       .then((res) => res.json())
       .then((data) =>
         setWardrobe(data.map((item) => ({ ...item, slot: getSlot(item) }))),

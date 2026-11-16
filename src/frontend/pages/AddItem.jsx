@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Check, Plus } from "lucide-react";
 import { CATEGORIES, COLORS, SEASONS, STYLES } from "../../shared/catalog";
+import { API_URL } from "../api";
 
 const input =
   "mt-1 w-full rounded-xl border border-line px-3 py-2 outline-none focus:border-blue-500";
@@ -27,7 +28,7 @@ export default function AddItem() {
   useEffect(() => {
     if (!isEdit) return;
 
-    fetch(`http://localhost:5000/api/Items/${id}`)
+    fetch(`${API_URL}/api/Items/${id}`)
       .then((res) => res.json())
       .then((item) => {
         setName(item.name);
@@ -67,7 +68,7 @@ export default function AddItem() {
       const formData = new FormData();
       formData.append("image", f);
 
-      const response = await fetch("http://localhost:5000/api/process-image", {
+      const response = await fetch(`${API_URL}/api/process-image`, {
         method: "POST",
         body: formData,
       });
@@ -112,9 +113,7 @@ export default function AddItem() {
     }
 
     // New item -> POST to the list, existing item -> PUT to that item
-    const url = isEdit
-      ? `http://localhost:5000/api/Items/${id}`
-      : "http://localhost:5000/api/Items";
+    const url = isEdit ? `${API_URL}/api/Items/${id}` : `${API_URL}/api/Items`;
 
     try {
       const response = await fetch(url, {

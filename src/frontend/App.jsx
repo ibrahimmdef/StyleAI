@@ -11,6 +11,7 @@ import BuildOutfit from "./pages/BuildOutfit";
 import Preferences from "./pages/Preferences";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
+import { API_URL } from "./api";
 
 export default function App() {
   return (
@@ -39,7 +40,7 @@ function AppLayout() {
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/profile")
+    fetch(`${API_URL}/api/profile`)
       .then((res) => res.json())
       .then((data) => setProfile(data))
       .catch(() => setProfile(null));

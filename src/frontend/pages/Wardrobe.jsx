@@ -6,6 +6,7 @@ import CategoryFilter from "../components/CategoryFilter";
 import WardrobeFilters from "../components/WardrobeFilters";
 import ClothingCard from "../components/ClothingCard";
 import { Button } from "../components/Buttons";
+import { API_URL } from "../api";
 
 export default function Wardrobe() {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ export default function Wardrobe() {
   const [clothes, setClothes] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/Items")
+    fetch(`${API_URL}/api/Items`)
       .then((res) => res.json())
       .then((data) => setClothes(data));
   }, []);
@@ -22,7 +23,7 @@ export default function Wardrobe() {
   async function deleteItem(item) {
     if (!confirm(`Delete "${item.name}" from your wardrobe?`)) return;
 
-    const res = await fetch(`http://localhost:5000/api/Items/${item.id}`, {
+    const res = await fetch(`${API_URL}/api/Items/${item.id}`, {
       method: "DELETE",
     });
     if (!res.ok) {

@@ -12,8 +12,9 @@ import {
 } from "lucide-react";
 import { Button } from "../components/Buttons";
 import { COLORS, OCCASIONS, SEASONS } from "../../shared/catalog";
+import { API_URL } from "../api";
 
-const API = "http://localhost:5000/api/preferences";
+const API = `${API_URL}/api/preferences`;
 
 // Icon and a short line for each style card
 const STYLE_CARDS = [
