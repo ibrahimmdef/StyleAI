@@ -149,7 +149,7 @@ function OutfitReasons({ hasLayer, temp, children }) {
   return (
     <section
       aria-labelledby="outfit-reasons-title"
-      className="flex flex-1 flex-col rounded-[14px] border border-line bg-white/90 p-5 xl:p-6"
+      className="flex flex-1 flex-col rounded-[14px] border border-line bg-white/90 p-5 max-sm:order-last xl:p-6"
     >
       <h2 id="outfit-reasons-title" className="text-base font-semibold">
         Why this outfit?

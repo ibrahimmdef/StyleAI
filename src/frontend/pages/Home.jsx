@@ -230,9 +230,11 @@ export default function Home() {
         <time className="pt-1 text-[11px] text-muted">{date}</time>
       </header>
 
-      {/* Weather on the left, outfit on the right */}
+      {/* Weather on the left, outfit on the right.
+          On phones the inner div steps aside (contents), so the order is
+          weather, outfit, then "Why this outfit" last. */}
       <div className="grid items-stretch gap-5 min-[1150px]:grid-cols-[270px_minmax(0,1fr)] min-[1400px]:grid-cols-[290px_minmax(0,1fr)]">
-        <div className="grid gap-5 sm:grid-cols-2 min-[1150px]:flex min-[1150px]:flex-col">
+        <div className="grid gap-5 max-sm:contents sm:grid-cols-2 min-[1150px]:flex min-[1150px]:flex-col">
           <WeatherCard
             weather={weather}
             failed={weatherFailed}
