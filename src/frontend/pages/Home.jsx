@@ -50,12 +50,10 @@ export default function Home() {
   const [notice, setNotice] = useState("");
   const [activeSlot, setActiveSlot] = useState(null);
   const closePicker = useCallback(() => setActiveSlot(null), []);
-  const generateTimer = useRef();
   const noticeTimer = useRef();
 
   useEffect(
     () => () => {
-      clearTimeout(generateTimer.current);
       clearTimeout(noticeTimer.current);
     },
     [],
@@ -112,58 +110,92 @@ export default function Home() {
     );
   }
 
-  // Random outfit that fits today's season and temperature.
-  // Pinned pieces always go in. `prompt` is for the AI later, it isn't used yet.
-  function generate(prompt, pinnedIds) {
+  // Which pieces may go in each slot. Our rules decide this, the AI only picks among them.
+  function allowedPieces(pinnedIds) {
+    const season = getSeason();
+    const slots = {};
+
+    for (const slot of SLOTS) {
+      // A pinned piece for this slot wins
+      const pinned = wardrobe.filter(
+        (item) => item.slot === slot && pinnedIds.includes(item.id),
+      );
+      if (pinned.length) {
+        slots[slot] = { required: true, items: pinned };
+        continue;
+      }
+
+      // Avoided colors never go in. Pinned pieces above still do, the user picked them.
+      const all = wardrobe.filter(
+        (item) =>
+          item.slot === slot && allowedColor(item, preferences?.avoidColors),
+      );
+      // Season first, then the user's styles. Each one only narrows the
+      // list if something is left, so a slot never ends up empty because of it.
+      const inSeason = preferWhere(all, (item) => fitsSeason(item, season));
+      const options = preferWhere(inSeason, (item) =>
+        fitsStyle(item, preferences?.styles),
+      );
+
+      let required = !OPTIONAL_SLOTS.includes(slot);
+      let items = options;
+      // Cold: a layer must go in. Warm: none at all.
+      // How cold is "cold" depends on the person.
+      if (slot === "outerwear" && weather) {
+        required = needsLayer(weather.temp, preferences?.coldTolerance);
+        if (!required) items = [];
+      }
+      slots[slot] = { required, items };
+    }
+    return slots;
+  }
+
+  // No AI, or it failed: a random pick from the same pieces
+  function randomPicks(slots) {
+    const picks = {};
+    for (const [slot, { required, items }] of Object.entries(slots)) {
+      // Optional pieces go in a bit more than half the time
+      const skip = !required && Math.random() < 0.4;
+      // Liked colors have two tickets in the draw
+      const draw = boostColors(items, preferences?.colors);
+      picks[slot] =
+        draw.length && !skip
+          ? draw[Math.floor(Math.random() * draw.length)].id
+          : null;
+    }
+    return picks;
+  }
+
+  // Asks the AI first. If it isn't set up, is over its daily limit or fails,
+  // the random pick takes over, so the button always works.
+  async function generate(prompt, pinnedIds) {
     if (isGenerating) return;
     if (wardrobe.length === 0) {
       notify("Add some clothes to your wardrobe first.");
       return;
     }
+
     setIsGenerating(true);
-    generateTimer.current = setTimeout(() => {
-      const season = getSeason();
-      const pinned = wardrobe.filter((item) => pinnedIds.includes(item.id));
+    const slots = allowedPieces(pinnedIds);
+    try {
+      const res = await fetch(`${API_URL}/api/ai/outfit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ request: prompt, temp: weather?.temp, slots }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
       const next = {};
-
-      for (const slot of SLOTS) {
-        // A pinned piece for this slot wins, no dice
-        const mustHave = pinned.filter((item) => item.slot === slot);
-        if (mustHave.length) {
-          next[slot] = mustHave[Math.floor(Math.random() * mustHave.length)].id;
-          continue;
-        }
-
-        // Avoided colors never go in. Pinned pieces above still do, the user picked them.
-        const all = wardrobe.filter(
-          (item) =>
-            item.slot === slot && allowedColor(item, preferences?.avoidColors),
-        );
-        // Season first, then the user's styles. Each one only narrows the
-        // list if something is left, so a slot never ends up empty because of it.
-        const inSeason = preferWhere(all, (item) => fitsSeason(item, season));
-        const options = preferWhere(inSeason, (item) =>
-          fitsStyle(item, preferences?.styles),
-        );
-
-        let skip = OPTIONAL_SLOTS.includes(slot) && Math.random() < 0.4;
-        // Cold: always add a layer. Warm: leave it out.
-        // How cold is "cold" depends on the person.
-        if (slot === "outerwear" && weather) {
-          skip = !needsLayer(weather.temp, preferences?.coldTolerance);
-        }
-
-        // Liked colors have two tickets in the draw
-        const draw = boostColors(options, preferences?.colors);
-        next[slot] =
-          draw.length && !skip
-            ? draw[Math.floor(Math.random() * draw.length)].id
-            : null;
-      }
+      for (const slot of SLOTS) next[slot] = data.picks[slot] ?? null;
       setOutfit(next);
-      setIsGenerating(false);
+      notify(data.reason || "A fresh combination, from your wardrobe.");
+    } catch {
+      setOutfit(randomPicks(slots));
       notify("A fresh combination, from your wardrobe.");
-    }, 550);
+    } finally {
+      setIsGenerating(false);
+    }
   }
 
   // Is the outfit on screen already saved? Is it a favorite?
