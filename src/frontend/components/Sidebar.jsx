@@ -36,7 +36,20 @@ export function Brand() {
   );
 }
 
-export default function Sidebar() {
+// "Ibrahim Musa" -> "IM", one word -> one letter
+function initials(name) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0].toUpperCase())
+    .join("");
+}
+
+export default function Sidebar({ profile }) {
+  // Until the profile loads, show a plain placeholder
+  const name = profile?.name || "User";
+
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-[205px] flex-col border-r border-line/70 bg-[linear-gradient(145deg,#f7fbff,#eff7ff)] px-4 pt-6 pb-5 lg:flex xl:w-[220px]">
       <div className="px-1.5">
@@ -63,15 +76,23 @@ export default function Sidebar() {
       <Link
         to="/profile"
         className="mt-auto flex items-center gap-2.5 rounded-xl pt-8"
-        aria-label="Open Elif’s profile"
+        aria-label={`Open ${name}'s profile`}
       >
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#d8e4f4] text-xs font-semibold text-[#4f6487]">
-          EA
-        </span>
+        {profile?.photo ? (
+          <img
+            src={profile.photo}
+            alt=""
+            className="size-10 shrink-0 rounded-full object-cover"
+          />
+        ) : (
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-selected text-xs font-semibold text-brand">
+            {initials(name)}
+          </span>
+        )}
         <span className="min-w-0 flex-1">
-          <span className="block text-xs font-semibold">Elif</span>
-          <span className="block truncate text-[10px] text-muted">
-            elif@example.com
+          <span className="block truncate text-xs font-semibold">{name}</span>
+          <span className="block truncate text-xs text-muted">
+            {profile?.email}
           </span>
         </span>
         <EllipsisVertical size={16} className="text-brand" aria-hidden="true" />

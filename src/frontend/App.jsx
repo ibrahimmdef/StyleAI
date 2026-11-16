@@ -35,16 +35,27 @@ export default function App() {
 }
 
 function AppLayout() {
+  // The sidebar and the pages both need the name, so it's loaded once here
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/profile")
+      .then((res) => res.json())
+      .then((data) => setProfile(data))
+      .catch(() => setProfile(null));
+  }, []);
+
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,#e6f2ff_0%,#f2f8ff_55%,#eaf4ff_100%)]  4xl:px-7 4xl:py-12">
       <div className="app-container flex min-h-[calc(100dvh-96px)] overflow-hidden rounded-2xl border border-white/90 bg-white/65 shadow-soft">
-        <Sidebar />
+        <Sidebar profile={profile} />
 
         <main
           id="main-content"
           className="min-w-0 flex-1 px-4 pt-5 pb-24 sm:px-6 sm:pt-6 lg:ml-[205px] lg:pb-6 xl:ml-[220px] xl:px-7"
         >
-          <Outlet />
+          {/* Pages get it with useOutletContext() */}
+          <Outlet context={{ profile, setProfile }} />
         </main>
       </div>
       <MobileNavigation />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useOutletContext } from "react-router-dom";
 import {
   Bell,
   Camera,
@@ -26,6 +26,8 @@ const input =
 
 export default function Profile() {
   const navigate = useNavigate();
+  // Telling the layout keeps the sidebar in sync
+  const { setProfile } = useOutletContext();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [place, setPlace] = useState("Finding your location…");
@@ -90,6 +92,7 @@ export default function Profile() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
       showProfile(data);
+      setProfile(data);
       setError("");
       return true;
     } catch (err) {
@@ -114,6 +117,7 @@ export default function Profile() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
       setPhoto(data.photo);
+      setProfile(data);
       setError("");
     } catch (err) {
       setError(err.message || "Could not upload the photo.");
