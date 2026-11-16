@@ -38,6 +38,11 @@ function formatHour(h) {
   return `${h % 12 || 12} ${h < 12 ? "AM" : "PM"}`;
 }
 
+// The weather always comes in °C. Only the shown number changes.
+function toUnit(celsius, unit) {
+  return unit === "F" ? Math.round((celsius * 9) / 5 + 32) : celsius;
+}
+
 // Gets the user's location, falls back to Baku if they say no
 export function getLocation() {
   const baku = { lat: 40.41, lon: 49.87, isFallback: true };
@@ -61,7 +66,7 @@ export function getLocation() {
 }
 
 // Weather card
-function WeatherSection({ weather, failed, isFallback }) {
+function WeatherSection({ weather, failed, isFallback, unit }) {
   if (failed) {
     return (
       <section className={cardClass}>
@@ -101,12 +106,13 @@ function WeatherSection({ weather, failed, isFallback }) {
         />
         <div>
           <p className="text-[34px] leading-none font-semibold tracking-tight">
-            {weather.temp}°C
+            {toUnit(weather.temp, unit)}°{unit}
           </p>
           <p className="mt-2 text-[13px]">{label}</p>
           <p className="mt-2 text-xs text-muted">
-            H: {weather.high}° <span className="mx-2 text-[#b0c9e7]">·</span> L:{" "}
-            {weather.low}°
+            H: {toUnit(weather.high, unit)}°{" "}
+            <span className="mx-2 text-[#b0c9e7]">·</span> L:{" "}
+            {toUnit(weather.low, unit)}°
           </p>
         </div>
       </div>
@@ -123,7 +129,9 @@ function WeatherSection({ weather, failed, isFallback }) {
                 style={{ color }}
                 aria-hidden="true"
               />
-              <span className="text-sm font-semibold">{temp}°</span>
+              <span className="text-sm font-semibold">
+                {toUnit(temp, unit)}°
+              </span>
             </div>
           );
         })}
@@ -133,13 +141,13 @@ function WeatherSection({ weather, failed, isFallback }) {
 }
 
 // Short reasons for the outfit ("Why this outfit?")
-function OutfitReasons({ hasLayer, temp, children }) {
+function OutfitReasons({ hasLayer, temp, unit, children }) {
   const reasons = [
     {
       icon: Cloud,
       text:
         temp != null
-          ? `Comfortable for ${temp}°C`
+          ? `Comfortable for ${toUnit(temp, unit)}°${unit}`
           : "Comfortable for today's weather",
     },
     { icon: Palette, text: "Matches your casual style" },
@@ -187,15 +195,22 @@ export async function loadWeather() {
 }
 
 // Main component: only shows the weather, Home gives it the data
-export default function WeatherCard({ weather, failed, hasLayer, children }) {
+export default function WeatherCard({
+  weather,
+  failed,
+  hasLayer,
+  unit = "C",
+  children,
+}) {
   return (
     <>
       <WeatherSection
         weather={weather}
         failed={failed}
         isFallback={weather?.isFallback}
+        unit={unit}
       />
-      <OutfitReasons hasLayer={hasLayer} temp={weather?.temp}>
+      <OutfitReasons hasLayer={hasLayer} temp={weather?.temp} unit={unit}>
         {children}
       </OutfitReasons>
     </>
