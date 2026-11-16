@@ -4,7 +4,6 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
     "dev": "nodemon server.js",
     "db:setup": "node setup-db.js"
@@ -30,12 +29,14 @@
     "dotenv": "^18.0.9",
     "express": "^5.3.0",
     "multer": "^2.5.0",
-    "nodemon": "^3.1.14",
     "pg": "^8.23.1",
     "sharp": "^0.35.5"
   },
   "allowScripts": {
     "onnxruntime-node@1.17.3": true,
     "sharp@0.32.6": true
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }

@@ -10,8 +10,7 @@ const upload = multer();
 
 // Takes any photo of a piece and gives back a webp with the background removed,
 // saved in uploads as "<owner id>-<time>.webp". Returns the path, like "/uploads/7-1794....webp".
-// Add Item uses it through the route below, import-photos.js uses it directly.
-export async function cutOut(photo, ownerId) {
+async function cutOut(photo, ownerId) {
   const resized = await sharp(photo)
     .rotate()
     .resize({

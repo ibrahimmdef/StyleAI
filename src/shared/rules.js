@@ -1,7 +1,7 @@
 // Simple outfit rules. The random generator uses them now, the AI can use them later.
 
 // Below this temperature (°C) an outfit needs a jacket or coat
-export const LAYER_TEMP = 18;
+const LAYER_TEMP = 18;
 
 // Season for a date (northern hemisphere)
 export function getSeason(date = new Date()) {

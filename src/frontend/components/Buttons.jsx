@@ -25,17 +25,3 @@ export function Button({
     </button>
   );
 }
-
-export function IconButton({ label, icon: Icon, className = "", ...props }) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      className={`inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-line bg-surface text-brand transition hover:border-brand/40 hover:bg-selected focus-visible:bg-selected ${className}`}
-      {...props}
-    >
-      <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
-    </button>
-  );
-}
