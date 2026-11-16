@@ -74,6 +74,7 @@ cd src/backend && npm install && NODE_ENV=production node server.js
 The app is then on port 5000 (or `PORT`). A few things worth knowing:
 
 - Put it behind HTTPS (for example Caddy or nginx in front of port 5000). With `NODE_ENV=production` the login cookie is only sent over HTTPS, so logging in won't work on plain http.
+- Run Caddy or nginx on the same machine. The backend only trusts the visitor's address from a proxy on the same machine (`trust proxy` in `server.js`), and the login limits count by that address.
 - Keep it running after you log out of the server with pm2 or a systemd service.
 - Background removal runs on the server and needs about 1–2 GB of free memory.
 - Back up the database with `pg_dump` and the `src/backend/uploads` folder, the photos aren't in the database.

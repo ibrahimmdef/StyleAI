@@ -15,6 +15,11 @@ import weatherRoutes from "./weather.js";
 const app = express();
 const port = process.env.PORT || 5000;
 
+// On the server, nginx or Caddy sits in front and every request seems to come
+// from it (127.0.0.1). This makes req.ip the real visitor's address, which the
+// login limits count by. "loopback" only believes a proxy on this same machine,
+// so someone on the internet can't fake their address to dodge the limits.
+app.set("trust proxy", "loopback");
 app.use(express.json());
 // Photos go here. Git doesn't keep empty folders, so make it on a fresh copy.
 fs.mkdirSync("uploads", { recursive: true });
