@@ -10,12 +10,13 @@ import {
   MapPin,
   Moon,
   Pencil,
+  RotateCcw,
   ShieldCheck,
   Trash2,
   UserRound,
 } from "lucide-react";
 import { Button } from "../components/Buttons";
-import { STORAGE, applyTheme, writeStorage } from "../data";
+import { STORAGE, applyTheme, removeStorage, writeStorage } from "../data";
 import { getLocation } from "../components/WeatherCard";
 import { API_URL, fileUrl } from "../api";
 
@@ -47,6 +48,8 @@ export default function Profile() {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [itemCount, setItemCount] = useState(0);
+  const [outfitCount, setOutfitCount] = useState(0);
 
   useEffect(() => {
     fetch(API)
@@ -64,6 +67,16 @@ export default function Profile() {
 
   useEffect(() => {
     findPlace();
+  }, []);
+
+  // Counts for the reset question, so people know what they'd lose
+  useEffect(() => {
+    fetch(`${API_URL}/api/Items`)
+      .then((res) => res.json())
+      .then((data) => setItemCount(data.length));
+    fetch(`${API_URL}/api/outfits`)
+      .then((res) => res.json())
+      .then((data) => setOutfitCount(data.length));
   }, []);
 
   // Same location the weather card uses, turned into a city name
@@ -158,6 +171,31 @@ export default function Profile() {
     }
     const ok = await save({ name: draftName, email: draftEmail });
     if (ok) setIsEditing(false);
+  }
+
+  // Empties the wardrobe and the saved outfits, for starting over with your own clothes
+  async function resetWardrobe() {
+    const sure = confirm(
+      `Delete all ${itemCount} pieces and ${outfitCount} saved outfits? This can't be undone.`,
+    );
+    if (!sure) return;
+
+    try {
+      const items = await fetch(`${API_URL}/api/Items`, { method: "DELETE" });
+      const outfits = await fetch(`${API_URL}/api/outfits`, {
+        method: "DELETE",
+      });
+      if (!items.ok || !outfits.ok) throw new Error();
+      // Today's outfit points at pieces that are gone now
+      removeStorage(STORAGE.outfit);
+      removeStorage(STORAGE.outfitDay);
+      setItemCount(0);
+      setOutfitCount(0);
+      setError("");
+      setMessage("Your wardrobe is empty now. Time to add your own pieces!");
+    } catch {
+      setError("Could not reset the wardrobe.");
+    }
   }
 
   function notReady() {
@@ -327,7 +365,7 @@ export default function Profile() {
         </section>
       </div>
 
-      {/* There are no accounts yet, so these only say so */}
+      {/* Log out goes to the login page. Delete account waits for real accounts. */}
       <div className="mt-5 flex items-center justify-between">
         <Button
           variant="secondary"
@@ -337,13 +375,23 @@ export default function Profile() {
         >
           Log out
         </Button>
-        <button
-          type="button"
-          onClick={notReady}
-          className="inline-flex items-center gap-2 text-sm font-medium text-red-600"
-        >
-          <Trash2 size={16} /> Delete account
-        </button>
+        <div className="flex flex-wrap justify-end gap-x-6 gap-y-2">
+          <button
+            type="button"
+            onClick={resetWardrobe}
+            disabled={itemCount === 0 && outfitCount === 0}
+            className="inline-flex items-center gap-2 text-sm font-medium text-red-600 disabled:opacity-50"
+          >
+            <RotateCcw size={16} /> Reset wardrobe
+          </button>
+          <button
+            type="button"
+            onClick={notReady}
+            className="inline-flex items-center gap-2 text-sm font-medium text-red-600"
+          >
+            <Trash2 size={16} /> Delete account
+          </button>
+        </div>
       </div>
     </div>
   );

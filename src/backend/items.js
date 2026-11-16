@@ -102,6 +102,19 @@ router.delete("/Items/:id", (req, res) => {
   res.json({ message: "Item deleted" });
 });
 
+// Empties the whole wardrobe: every item and its photo. The profile photo stays.
+router.delete("/Items", (req, res) => {
+  try {
+    const items = readItems();
+    saveItems([]);
+    for (const item of items) deletePhoto(item.image);
+    res.json({ message: `${items.length} items deleted` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Could not empty the wardrobe" });
+  }
+});
+
 router.post("/Items", (req, res) => {
   const { name, category, type, color, seasons, styles, image } = req.body;
 

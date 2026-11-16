@@ -95,6 +95,18 @@ router.patch("/outfits/:id", (req, res) => {
   res.json(outfit);
 });
 
+// Deletes every saved outfit (used when the wardrobe is reset)
+router.delete("/outfits", (req, res) => {
+  try {
+    const count = readOutfits().length;
+    saveOutfits([]);
+    res.json({ message: `${count} outfits deleted` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Could not delete the outfits" });
+  }
+});
+
 router.delete("/outfits/:id", (req, res) => {
   const outfits = readOutfits();
   const rest = outfits.filter((outfit) => outfit.id !== Number(req.params.id));
