@@ -6,29 +6,48 @@ const router = Router();
 const MODEL = "gemini-3.5-flash-lite";
 const NONE = "none";
 
-// Our code only removes what must never go in. The taste is the model's job.
-const INSTRUCTIONS = `You are ${STYLIST}, the stylist inside StyleAI. You put together one outfit from a person's own wardrobe.
-For each slot you get the pieces that are allowed there. Pick one piece per slot by its id.
-Slots marked "required" must get a piece. Optional slots can be "none" when the outfit is better without them.
-Think like a real stylist: colors that work together, a consistent style, the weather and the occasion.
-The person's preferred styles, liked colors and the current season are hints, not rules. Follow them by default,
-but let the request win: "gym" means sporty pieces, "wedding" means the smartest ones, whatever the preferences say.
-Each piece lists the seasons it is for. In the cold, prefer warm pieces; in the heat, prefer light ones.
-If a current outfit is given, make the new one clearly different: change at least two pieces when you can.
-Then reply to the person in one or two short sentences (under 30 words), casual and warm,
-like a stylist friend texting back. Answer what they asked for, if they asked something,
-and say in a few words why the outfit works.`;
+// Our code only removes what must never go in. The taste, and the talking, is the model's job.
+const INSTRUCTIONS = `You are ${STYLIST}, the stylist inside StyleAI. You know this person's wardrobe and help them dress from it.
 
-// Only these ids (or "none" for optional slots) can come back, so the model can't make up pieces
+First work out what the person wants:
+- An outfit (a plan like "dinner tonight", "gym", or no request at all): set "outfit" to true and pick pieces.
+- A question about their wardrobe ("what styles can I make?", "what am I missing for a wedding?"):
+  set "outfit" to false, answer it from the pieces you can see, and pick "none" everywhere.
+
+When you make an outfit:
+- For each slot you get the pieces allowed there. Pick one per slot by id.
+- Slots marked "required" must get a piece. Optional slots can be "none" when the outfit is better without them.
+- Think like a real stylist: colors that work together, one consistent style, the weather and the occasion.
+- The person's preferred styles, liked colors and the season are hints, not rules. The request wins:
+  "gym" needs sporty pieces, "wedding" needs the smartest ones.
+- In the cold, prefer warm pieces; in the heat, light ones. Each piece lists the seasons it is for.
+- If a current outfit is given, change at least two pieces when you can.
+
+Be honest about the wardrobe:
+- Never call a piece something it isn't. A leather jacket is not gym wear.
+- If the wardrobe has nothing that really fits the request, say so and name what's missing
+  (for example "you don't have any sportswear yet, add some joggers and trainers").
+  If something is close enough, make the closest outfit and say it's a compromise.
+  If nothing is close, set "outfit" to false.
+- Slots listed in "emptySlots" have no pieces at all. Colors in "avoidedColors" are hidden on purpose.
+
+Your reply: talk to the person like a stylist friend texting back, casual and warm, in their language.
+Keep it short: one to three sentences, under 60 words. No lists, no markdown.`;
+
+// Only these ids (or "none") can come back, so the model can't make up pieces.
+// Required slots are checked in code, because in question mode nothing is picked.
 function buildSchema(slots) {
   const picks = {};
-  for (const [slot, { required, items }] of Object.entries(slots)) {
-    const ids = items.map((item) => String(item.id));
-    picks[slot] = { type: "string", enum: required ? ids : [...ids, NONE] };
+  for (const [slot, { items }] of Object.entries(slots)) {
+    picks[slot] = {
+      type: "string",
+      enum: [...items.map((item) => String(item.id)), NONE],
+    };
   }
   return {
     type: "object",
     properties: {
+      outfit: { type: "boolean" },
       picks: {
         type: "object",
         properties: picks,
@@ -36,7 +55,7 @@ function buildSchema(slots) {
       },
       reply: { type: "string" },
     },
-    required: ["picks", "reply"],
+    required: ["outfit", "picks", "reply"],
   };
 }
 
@@ -57,6 +76,13 @@ function describe(item) {
   };
 }
 
+// Keeps only the strings in a list, so odd input can't end up in the prompt
+function strings(list) {
+  return Array.isArray(list)
+    ? list.filter((value) => typeof value === "string")
+    : [];
+}
+
 router.post("/ai/outfit", async (req, res) => {
   const { request, temp, slots, current, person } = req.body;
 
@@ -66,10 +92,11 @@ router.post("/ai/outfit", async (req, res) => {
   if (!slots || typeof slots !== "object") {
     return res.status(400).json({ message: "slots are required" });
   }
-  // Empty slots are left out: there's nothing to pick
+  // Empty slots are left out of the picks, but the model hears about them
   const filled = Object.fromEntries(
     Object.entries(slots).filter(([, slot]) => slot.items?.length),
   );
+  const emptySlots = Object.keys(slots).filter((slot) => !filled[slot]);
   if (Object.keys(filled).length === 0) {
     return res.status(400).json({ message: "Nothing to pick from" });
   }
@@ -78,11 +105,13 @@ router.post("/ai/outfit", async (req, res) => {
     request: typeof request === "string" ? request.slice(0, 300) : "",
     temperatureC: temp,
     person: {
-      styles: Array.isArray(person?.styles) ? person.styles : [],
-      likedColors: Array.isArray(person?.likedColors) ? person.likedColors : [],
+      styles: strings(person?.styles),
+      likedColors: strings(person?.likedColors),
+      avoidedColors: strings(person?.avoidColors),
       season: typeof person?.season === "string" ? person.season : "",
     },
     currentOutfit: Array.isArray(current) ? current.map(String) : [],
+    emptySlots,
     slots: Object.fromEntries(
       Object.entries(filled).map(([slot, { required, items }]) => [
         slot,
@@ -97,6 +126,8 @@ router.post("/ai/outfit", async (req, res) => {
       model: MODEL,
       system_instruction: INSTRUCTIONS,
       input,
+      // The default is "minimal", nearly no thinking. A bit more makes the answers smarter.
+      generation_config: { thinking_level: "medium" },
       response_format: {
         type: "text",
         mime_type: "application/json",
@@ -107,8 +138,14 @@ router.post("/ai/outfit", async (req, res) => {
     });
 
     const answer = JSON.parse(interaction.output_text);
+    const reply = String(answer.reply ?? "");
 
-    // Check it anyway: every pick must be one of the pieces we sent
+    // Just talking, the outfit on screen stays
+    if (!answer.outfit) {
+      return res.json({ outfit: false, reply });
+    }
+
+    // Check it anyway: every pick must be one we sent, and required slots filled
     const picks = {};
     for (const [slot, { required, items }] of Object.entries(filled)) {
       const id = answer.picks?.[slot];
@@ -119,7 +156,7 @@ router.post("/ai/outfit", async (req, res) => {
       picks[slot] = item ? item.id : null;
     }
 
-    res.json({ picks, reply: String(answer.reply ?? "") });
+    res.json({ outfit: true, picks, reply });
   } catch (err) {
     console.error("AI ERROR:", err.message);
     // 429 = the free daily limit is used up

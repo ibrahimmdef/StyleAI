@@ -191,6 +191,7 @@ export default function Home() {
           person: {
             styles: preferences?.styles ?? [],
             likedColors: preferences?.colors ?? [],
+            avoidColors: preferences?.avoidColors ?? [],
             season: getSeason(),
           },
           // So the AI gives something new instead of the same outfit again
@@ -200,9 +201,12 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
-      const next = {};
-      for (const slot of SLOTS) next[slot] = data.picks[slot] ?? null;
-      setOutfit(next);
+      // A question gets only an answer, the outfit on screen stays
+      if (data.outfit) {
+        const next = {};
+        for (const slot of SLOTS) next[slot] = data.picks[slot] ?? null;
+        setOutfit(next);
+      }
       setChat({
         question: prompt,
         answer: data.reply || "Here's a fresh one from your wardrobe.",

@@ -57,7 +57,7 @@ export default function OutfitPrompt({
               <Sparkles size={14} />
             </span>
             <p
-              className={`rounded-2xl rounded-tl-md bg-white px-4 py-2 ${
+              className={`rounded-2xl rounded-tl-md bg-white px-4 py-2 whitespace-pre-line ${
                 chat.answer ? "" : "animate-pulse text-muted"
               }`}
             >
