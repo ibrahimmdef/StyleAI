@@ -1,36 +1,32 @@
 import { Router } from "express";
-import fs from "fs";
 import { COLORS, OCCASIONS, SEASONS, STYLES } from "../shared/catalog.js";
+import { localUserId, pool } from "./db.js";
 
 const router = Router();
-const DATA_FILE = "preferences.json";
 
-// What a new user starts with
-const DEFAULTS = {
-  styles: ["Casual"],
-  colors: [],
-  avoidColors: [],
-  coldTolerance: 3,
-  unit: "C",
-  occasions: ["Casual"],
-  seasons: [],
-};
-
-function readPreferences() {
-  if (!fs.existsSync(DATA_FILE)) return DEFAULTS;
-  return { ...DEFAULTS, ...JSON.parse(fs.readFileSync(DATA_FILE, "utf8")) };
-}
+// Database names on the left, the names the frontend uses on the right
+const COLUMNS = `styles, colors, avoid_colors as "avoidColors",
+  cold_tolerance as "coldTolerance", unit, occasions, seasons`;
 
 // Every value in the list has to be one we know
 function allIn(list, allowed) {
   return Array.isArray(list) && list.every((value) => allowed.includes(value));
 }
 
-router.get("/preferences", (req, res) => {
-  res.json(readPreferences());
+router.get("/preferences", async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `select ${COLUMNS} from preferences where user_id = $1`,
+      [await localUserId()],
+    );
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Could not load preferences" });
+  }
 });
 
-router.put("/preferences", (req, res) => {
+router.put("/preferences", async (req, res) => {
   const {
     styles,
     colors,
@@ -58,18 +54,23 @@ router.put("/preferences", (req, res) => {
     return res.status(400).json({ message: "Unknown occasion or season" });
   }
 
-  const preferences = {
-    styles,
-    colors,
-    avoidColors,
-    coldTolerance,
-    unit,
-    occasions,
-    seasons,
-  };
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(preferences, null, 2) + "\n");
-    res.json(preferences);
+    const { rows } = await pool.query(
+      `update preferences set styles = $1, colors = $2, avoid_colors = $3,
+         cold_tolerance = $4, unit = $5, occasions = $6, seasons = $7
+       where user_id = $8 returning ${COLUMNS}`,
+      [
+        styles,
+        colors,
+        avoidColors,
+        coldTolerance,
+        unit,
+        occasions,
+        seasons,
+        await localUserId(),
+      ],
+    );
+    res.json(rows[0]);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Could not save preferences" });

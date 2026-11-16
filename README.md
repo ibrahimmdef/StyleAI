@@ -20,7 +20,7 @@ npm install
 npm run dev
 ```
 
-Run the backend from inside `src/backend`, it keeps its data files and uploaded photos there.
+Run the backend from inside `src/backend`, it keeps the uploaded photos there. Everything else is in the database.
 
 The first time, create the database tables (safe to run again):
 
