@@ -13,10 +13,20 @@
   "license": "ISC",
   "type": "module",
   "nodemonConfig": {
-    "watch": [".", "../shared"],
-    "ignore": ["items.json", "outfits.json", "preferences.json", "profile.json", "uploads/*"]
+    "watch": [
+      ".",
+      "../shared"
+    ],
+    "ignore": [
+      "items.json",
+      "outfits.json",
+      "preferences.json",
+      "profile.json",
+      "uploads/*"
+    ]
   },
   "dependencies": {
+    "@google/genai": "^3.3.0",
     "@imgly/background-removal-node": "^1.4.5",
     "cors": "^2.8.6",
     "dotenv": "^18.0.9",

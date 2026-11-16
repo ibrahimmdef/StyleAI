@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 
+import aiRoutes from "./ai.js";
 import itemsRoutes, { cleanUploads } from "./items.js";
 import outfitsRoutes from "./outfits.js";
 import preferencesRoutes from "./preferences.js";
@@ -16,6 +17,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
+app.use("/api", aiRoutes);
 app.use("/api", itemsRoutes);
 app.use("/api", outfitsRoutes);
 app.use("/api", preferencesRoutes);
