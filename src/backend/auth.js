@@ -76,6 +76,34 @@ export async function requireUser(req, res, next) {
   }
 }
 
+// Slows down password guessing. Kept in memory: a restart forgets it, which is fine.
+// key -> times of recent tries
+const TRY_WINDOW = 15 * 60 * 1000;
+const tries = new Map();
+
+// Counts one more try. True when the key is over its limit for the last 15 minutes.
+function tooMany(key, limit) {
+  const now = Date.now();
+  const recent = (tries.get(key) ?? []).filter((at) => now - at < TRY_WINDOW);
+  recent.push(now);
+  tries.set(key, recent);
+  return recent.length > limit;
+}
+
+// Forget old tries now and then, so the map doesn't keep growing
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, times] of tries) {
+    if (times.every((at) => now - at >= TRY_WINDOW)) tries.delete(key);
+  }
+}, TRY_WINDOW);
+
+function slowDown(res) {
+  return res
+    .status(429)
+    .json({ message: "Too many tries. Wait 15 minutes and try again." });
+}
+
 function looksLikeEmail(email) {
   return typeof email === "string" && /^\S+@\S+\.\S+$/.test(email);
 }
@@ -97,6 +125,8 @@ router.post("/auth/signup", async (req, res) => {
       .status(400)
       .json({ message: "Password needs at least 8 characters" });
   }
+  // A handful of new accounts per address is plenty
+  if (tooMany(`signup:${req.ip}`, 10)) return slowDown(res);
 
   try {
     const found = await pool.query(
@@ -145,6 +175,12 @@ router.post("/auth/login", async (req, res) => {
   if (!looksLikeEmail(email) || typeof password !== "string") {
     return res.status(400).json({ message: "Enter your email and password" });
   }
+  // Many tries from one address (any email), or wrong passwords for one email
+  if (tooMany(`login:${req.ip}`, 100)) return slowDown(res);
+  const failed = tries.get(`wrong:${email}`) ?? [];
+  if (failed.filter((at) => Date.now() - at < TRY_WINDOW).length >= 5) {
+    return slowDown(res);
+  }
 
   try {
     const { rows } = await pool.query(
@@ -154,8 +190,11 @@ router.post("/auth/login", async (req, res) => {
     // Same answer for an unknown email and a wrong password,
     // so nobody can find out which emails have accounts
     if (!rows.length || !checkPassword(password, rows[0].password_hash)) {
+      tooMany(`wrong:${email}`, 5);
       return res.status(401).json({ message: "Wrong email or password" });
     }
+    // Got it right: start counting from zero again
+    tries.delete(`wrong:${email}`);
 
     // A good moment to clear out old sessions
     await pool.query("delete from sessions where expires_at < now()");
