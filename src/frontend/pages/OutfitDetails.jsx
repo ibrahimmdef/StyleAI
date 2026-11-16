@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, ChevronRight, Heart, Pencil, Sparkles } from "lucide-react";
 import { Button } from "../components/Buttons";
 import OutfitCanvas from "../components/OutfitCanvas";
+import FrostedCard from "../components/FrostedCard";
 import { SLOTS, STORAGE, getSlot, outfitTags, writeStorage } from "../data";
 import { API_URL, fileUrl } from "../api";
 
@@ -114,9 +115,9 @@ export default function OutfitDetails() {
       </div>
 
       <div className="mt-6 grid gap-5 lg:grid-cols-2">
-        <section className={card}>
+        <FrostedCard>
           <OutfitCanvas items={items} />
-        </section>
+        </FrostedCard>
 
         <section className={`${card} flex flex-col`}>
           <div className="flex flex-wrap items-center gap-2">
@@ -143,7 +144,7 @@ export default function OutfitDetails() {
                 <img
                   src={fileUrl(item.image)}
                   alt={item.name}
-                  className="size-12 rounded-lg bg-canvas object-contain p-1"
+                  className="size-12 rounded-lg bg-canvas object-contain p-1 dark:bg-ink/85"
                 />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{item.name}</p>

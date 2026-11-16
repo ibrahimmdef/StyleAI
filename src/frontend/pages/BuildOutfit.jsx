@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Check, Info, Shirt, Trash2 } from "lucide-react";
 import { Button } from "../components/Buttons";
 import OutfitCanvas from "../components/OutfitCanvas";
+import FrostedCard from "../components/FrostedCard";
 import { OCCASIONS } from "../../shared/catalog";
 import {
   OPTIONAL_SLOTS,
@@ -188,7 +189,7 @@ export default function BuildOutfit() {
 
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
         {/* Preview. The swap buttons jump to that piece's tab. */}
-        <section className={card}>
+        <FrostedCard>
           <h2 className="mb-4 font-semibold">Outfit Preview</h2>
           {Object.values(items).some(Boolean) ? (
             <OutfitCanvas items={items} onSwap={setTab} />
@@ -200,7 +201,7 @@ export default function BuildOutfit() {
               </p>
             </div>
           )}
-        </section>
+        </FrostedCard>
 
         {/* Pieces for the selected tab */}
         <section className={`${card} flex flex-col`}>
@@ -269,7 +270,7 @@ export default function BuildOutfit() {
                   <img
                     src={fileUrl(item.image)}
                     alt={item.name}
-                    className="aspect-square w-full object-contain"
+                    className="aspect-square w-full rounded-lg object-contain dark:bg-ink/85"
                   />
                   <p className="mt-2 truncate text-xs font-medium">
                     {item.name}

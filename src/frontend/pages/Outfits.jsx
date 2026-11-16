@@ -237,7 +237,10 @@ function OutfitCard({
       </div>
 
       {/* Tapping the picture opens the outfit */}
-      <Link to={`/outfits/${entry.id}`} className="flex h-60 gap-3 px-2 pt-6">
+      <Link
+        to={`/outfits/${entry.id}`}
+        className="mt-6 flex h-60 gap-3 rounded-xl p-2 dark:bg-ink/85"
+      >
         {columns.map((column) => (
           <div
             key={column[0].id}
