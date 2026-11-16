@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { COLORS, OCCASIONS, SEASONS, STYLES } from "../shared/catalog.js";
-import { localUserId, pool } from "./db.js";
+import { pool } from "./db.js";
 
 const router = Router();
 
@@ -17,7 +17,7 @@ router.get("/preferences", async (req, res) => {
   try {
     const { rows } = await pool.query(
       `select ${COLUMNS} from preferences where user_id = $1`,
-      [await localUserId()],
+      [req.userId],
     );
     res.json(rows[0]);
   } catch (err) {
@@ -67,7 +67,7 @@ router.put("/preferences", async (req, res) => {
         unit,
         occasions,
         seasons,
-        await localUserId(),
+        req.userId,
       ],
     );
     res.json(rows[0]);

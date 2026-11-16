@@ -3,7 +3,7 @@ import multer from "multer";
 import fs from "fs";
 import path from "path";
 import sharp from "sharp";
-import { localUserId, pool } from "./db.js";
+import { pool } from "./db.js";
 
 const router = Router();
 const upload = multer();
@@ -21,7 +21,7 @@ async function readProfile(userId) {
 
 router.get("/profile", async (req, res) => {
   try {
-    res.json(await readProfile(await localUserId()));
+    res.json(await readProfile(req.userId));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Could not load profile" });
@@ -34,16 +34,16 @@ router.put("/profile", async (req, res) => {
   if (typeof name !== "string" || !name.trim()) {
     return res.status(400).json({ message: "Name is required" });
   }
-  // Email can be left empty, but if it's there it needs an @
-  if (typeof email !== "string" || (email && !email.includes("@"))) {
-    return res.status(400).json({ message: "Email doesn't look right" });
+  // The email is how people log in, so it can't be empty
+  if (typeof email !== "string" || !/^\S+@\S+\.\S+$/.test(email.trim())) {
+    return res.status(400).json({ message: "Enter a valid email" });
   }
   if (typeof notifications !== "boolean") {
     return res.status(400).json({ message: "Notifications is on or off" });
   }
 
   try {
-    const userId = await localUserId();
+    const userId = req.userId;
     // Emails are always saved in lower case
     await pool.query("update users set name = $1, email = $2 where id = $3", [
       name.trim(),
@@ -82,7 +82,7 @@ router.post("/profile/photo", upload.single("photo"), async (req, res) => {
     await fs.promises.writeFile(path.join("uploads", fileName), output);
 
     // Throw away the old photo
-    const userId = await localUserId();
+    const userId = req.userId;
     const old = await readProfile(userId);
     if (old.photo) {
       fs.rmSync(path.join("uploads", path.basename(old.photo)), {

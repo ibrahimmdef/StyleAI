@@ -2,7 +2,7 @@ import { Router } from "express";
 import fs from "fs";
 import path from "path";
 import { checkItem } from "../shared/catalog.js";
-import { localUserId, pool } from "./db.js";
+import { pool } from "./db.js";
 
 const router = Router();
 
@@ -47,7 +47,7 @@ router.get("/Items", async (req, res) => {
   try {
     const { rows } = await pool.query(
       `select ${COLUMNS} from items where user_id = $1 order by id`,
-      [await localUserId()],
+      [req.userId],
     );
     res.json(rows);
   } catch (err) {
@@ -60,7 +60,7 @@ router.get("/Items/:id", async (req, res) => {
   try {
     const { rows } = await pool.query(
       `select ${COLUMNS} from items where id = $1 and user_id = $2`,
-      [Number(req.params.id), await localUserId()],
+      [Number(req.params.id), req.userId],
     );
     if (rows.length === 0) {
       return res.status(404).json({ message: "Item not found" });
@@ -84,7 +84,7 @@ router.put("/Items/:id", async (req, res) => {
   }
 
   try {
-    const userId = await localUserId();
+    const userId = req.userId;
     const old = await pool.query(
       "select image from items where id = $1 and user_id = $2",
       [Number(req.params.id), userId],
@@ -123,7 +123,7 @@ router.delete("/Items/:id", async (req, res) => {
   try {
     const { rows } = await pool.query(
       "delete from items where id = $1 and user_id = $2 returning image",
-      [Number(req.params.id), await localUserId()],
+      [Number(req.params.id), req.userId],
     );
     if (rows.length === 0) {
       return res.status(404).json({ message: "Item not found" });
@@ -141,7 +141,7 @@ router.delete("/Items", async (req, res) => {
   try {
     const { rows } = await pool.query(
       "delete from items where user_id = $1 returning image",
-      [await localUserId()],
+      [req.userId],
     );
     for (const row of rows) deletePhoto(row.image);
     res.json({ message: `${rows.length} items deleted` });
@@ -171,16 +171,7 @@ router.post("/Items", async (req, res) => {
     const { rows } = await pool.query(
       `insert into items (user_id, name, category, type, color, seasons, styles, image)
        values ($1, $2, $3, $4, $5, $6, $7, $8) returning ${COLUMNS}`,
-      [
-        await localUserId(),
-        name,
-        category,
-        type,
-        color,
-        seasons,
-        styles,
-        image,
-      ],
+      [req.userId, name, category, type, color, seasons, styles, image],
     );
     res.status(201).json(rows[0]);
   } catch (err) {

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { OCCASIONS } from "../shared/catalog.js";
-import { localUserId, pool } from "./db.js";
+import { pool } from "./db.js";
 
 const router = Router();
 
@@ -15,7 +15,7 @@ router.get("/outfits", async (req, res) => {
   try {
     const { rows } = await pool.query(
       `select ${COLUMNS} from outfits where user_id = $1 order by id`,
-      [await localUserId()],
+      [req.userId],
     );
     res.json(rows);
   } catch (err) {
@@ -38,7 +38,7 @@ router.post("/outfits", async (req, res) => {
   }
 
   try {
-    const userId = await localUserId();
+    const userId = req.userId;
 
     // Same outfit saved twice? Just send back the one we already have.
     const existing = await pool.query(
@@ -83,7 +83,7 @@ router.patch("/outfits/:id", async (req, res) => {
   }
 
   try {
-    const userId = await localUserId();
+    const userId = req.userId;
     const found = await pool.query(
       `select ${COLUMNS} from outfits where id = $1 and user_id = $2`,
       [Number(req.params.id), userId],
@@ -131,7 +131,7 @@ router.delete("/outfits", async (req, res) => {
   try {
     const { rowCount } = await pool.query(
       "delete from outfits where user_id = $1",
-      [await localUserId()],
+      [req.userId],
     );
     res.json({ message: `${rowCount} outfits deleted` });
   } catch (err) {
@@ -144,7 +144,7 @@ router.delete("/outfits/:id", async (req, res) => {
   try {
     const { rowCount } = await pool.query(
       "delete from outfits where id = $1 and user_id = $2",
-      [Number(req.params.id), await localUserId()],
+      [Number(req.params.id), req.userId],
     );
     if (rowCount === 0) {
       return res.status(404).json({ message: "Outfit not found" });
