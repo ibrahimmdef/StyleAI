@@ -49,8 +49,8 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [notice, setNotice] = useState("");
   const [activeSlot, setActiveSlot] = useState(null);
-  // The last question and the AI's answer, shown under the prompt box
-  const [chat, setChat] = useState(null);
+  // The chat with Stella, newest last: [{ question, answer }]
+  const [chat, setChat] = useState([]);
   const [hasOpened, setHasOpened] = useState(false);
   const noticeTimer = useRef();
 
@@ -109,10 +109,12 @@ export default function Home() {
 
     const today = new Date().toDateString();
     if (readStorage(STORAGE.outfitDay, "") === today) {
-      setChat({
-        question: "",
-        answer: `${hello()} Today's fit is ready. Want something different? Just ask.`,
-      });
+      setChat([
+        {
+          question: "",
+          answer: `${hello()} Today's fit is ready. Want something different? Just ask.`,
+        },
+      ]);
       return;
     }
     writeStorage(STORAGE.outfitDay, today);
@@ -192,6 +194,11 @@ export default function Home() {
     return picks;
   }
 
+  // Puts the answer in place of the "styling…" message at the end of the chat
+  function answer(question, text) {
+    setChat((list) => [...list.slice(0, -1), { question, answer: text }]);
+  }
+
   // Asks the AI first. If it isn't set up, is over its daily limit or fails,
   // the random pick takes over for the button and the daily pick.
   // `opening` is the daily pick when the page opens.
@@ -203,8 +210,13 @@ export default function Home() {
     }
 
     setIsGenerating(true);
+    // The last few messages go along, so Stella gets follow-ups like "something warmer?".
+    // Only typed questions: the greeting has the person's name in it, that stays here.
+    const history = chat
+      .filter((message) => message.question && message.answer)
+      .slice(-3);
     // Question shows right away, the answer fills in when it comes
-    setChat({ question: prompt, answer: null });
+    setChat([...chat, { question: prompt, answer: null }].slice(-10));
     const slots = allowedPieces(pinnedIds);
     try {
       const res = await fetch(`${API_URL}/api/ai/outfit`, {
@@ -224,6 +236,7 @@ export default function Home() {
           },
           // So the AI gives something new instead of the same outfit again
           current: Object.values(outfit).filter(Boolean),
+          history,
         }),
       });
       const data = await res.json();
@@ -236,27 +249,23 @@ export default function Home() {
         setOutfit(next);
       }
       const reply = data.reply || "Here's a fresh one from your wardrobe.";
-      setChat({
-        question: prompt,
-        answer: opening ? `${hello()} ${reply}` : reply,
-      });
+      answer(prompt, opening ? `${hello()} ${reply}` : reply);
     } catch {
       // A typed message might not be asking for an outfit, so don't guess
       if (prompt) {
-        setChat({
-          question: prompt,
-          answer:
-            "I can't think straight right now, sorry. Tap Generate new outfit for a quick pick.",
-        });
+        answer(
+          prompt,
+          "I can't think straight right now, sorry. Tap Generate new outfit for a quick pick.",
+        );
         return;
       }
       setOutfit(randomPicks(slots));
-      setChat({
-        question: prompt,
-        answer: opening
+      answer(
+        prompt,
+        opening
           ? `${hello()} I picked today's outfit for you.`
           : "Here's a fresh one from your wardrobe.",
-      });
+      );
     } finally {
       setIsGenerating(false);
     }

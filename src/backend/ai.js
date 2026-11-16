@@ -37,6 +37,9 @@ Be honest about the wardrobe:
   If nothing is close, set "outfit" to false.
 - Slots listed in "emptySlots" have no pieces at all. Colors in "avoidedColors" are hidden on purpose.
 
+"earlierMessages" are the last few messages of this chat, oldest first. Use them for follow-ups:
+"something warmer?" or "swap the shoes" are about the outfit you just made.
+
 Your reply: talk to the person like a stylist friend texting back, casual and warm, in their language.
 Keep it short: one to three sentences, under 60 words. No lists, no markdown.`;
 
@@ -90,7 +93,7 @@ function strings(list) {
 }
 
 router.post("/ai/outfit", async (req, res) => {
-  const { request, temp, slots, current, person, opening } = req.body;
+  const { request, temp, slots, current, person, opening, history } = req.body;
 
   if (!process.env.GEMINI_API_KEY) {
     return res.status(503).json({ message: "AI is not set up" });
@@ -118,6 +121,12 @@ router.post("/ai/outfit", async (req, res) => {
       season: typeof person?.season === "string" ? person.season : "",
     },
     currentOutfit: Array.isArray(current) ? current.map(String) : [],
+    earlierMessages: (Array.isArray(history) ? history : [])
+      .slice(-3)
+      .map((message) => ({
+        person: String(message?.question ?? "").slice(0, 300),
+        you: String(message?.answer ?? "").slice(0, 400),
+      })),
     emptySlots,
     slots: Object.fromEntries(
       Object.entries(filled).map(([slot, { required, items }]) => [

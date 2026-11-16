@@ -6,7 +6,7 @@ import { STYLIST } from "../../shared/catalog";
 const roundButton = "flex size-8 items-center justify-center rounded-full";
 
 // Ask for an outfit: write what it's for, and pin pieces that must be in it.
-// The last question and the AI's answer show inside the box.
+// The chat with Stella shows inside the box.
 export default function OutfitPrompt({
   wardrobe,
   isGenerating,
@@ -41,28 +41,34 @@ export default function OutfitPrompt({
       onSubmit={submit}
       className="relative mt-5 rounded-2xl border border-line bg-canvas/60 p-3 focus-within:border-brand/40"
     >
-      {/* Last question and the AI's answer, inside the box like a chat */}
-      {chat && (
-        <div className="mb-3 flex flex-col gap-2 border-b border-line pb-3 text-sm">
-          {chat.question && (
-            <p className="max-w-md self-end rounded-2xl rounded-br-md bg-brand px-4 py-2 text-white">
-              {chat.question}
-            </p>
-          )}
-          <div className="flex max-w-md items-start gap-2">
-            <span
-              title={STYLIST}
-              className="grid size-7 shrink-0 place-items-center rounded-full bg-selected text-brand"
-            >
-              <Sparkles size={14} />
-            </span>
-            <p
-              className={`rounded-2xl rounded-tl-md bg-white px-4 py-2 whitespace-pre-line ${
-                chat.answer ? "" : "animate-pulse text-muted"
-              }`}
-            >
-              {chat.answer ?? `${STYLIST} is styling your fit…`}
-            </p>
+      {/* The chat with Stella. flex-col-reverse keeps it scrolled to the newest message. */}
+      {chat.length > 0 && (
+        <div className="mb-3 flex max-h-72 flex-col-reverse overflow-y-auto border-b border-line pb-3">
+          <div className="flex flex-col gap-2 text-sm">
+            {chat.map((message, index) => (
+              <div key={index} className="flex flex-col gap-2">
+                {message.question && (
+                  <p className="max-w-md self-end rounded-2xl rounded-br-md bg-brand px-4 py-2 text-white">
+                    {message.question}
+                  </p>
+                )}
+                <div className="flex max-w-md items-start gap-2">
+                  <span
+                    title={STYLIST}
+                    className="grid size-7 shrink-0 place-items-center rounded-full bg-selected text-brand"
+                  >
+                    <Sparkles size={14} />
+                  </span>
+                  <p
+                    className={`rounded-2xl rounded-tl-md bg-white px-4 py-2 whitespace-pre-line ${
+                      message.answer ? "" : "animate-pulse text-muted"
+                    }`}
+                  >
+                    {message.answer ?? `${STYLIST} is styling your fit…`}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
