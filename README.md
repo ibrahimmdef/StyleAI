@@ -22,6 +22,13 @@ npm run dev
 
 Run the backend from inside `src/backend`, it keeps its data files and uploaded photos there.
 
+The first time, create the database tables (safe to run again):
+
+```bash
+cd src/backend
+npm run db:setup
+```
+
 Tests: `cd src/frontend && npm test`
 
 ## Settings
@@ -31,6 +38,8 @@ Tests: `cd src/frontend && npm test`
 | Name | What it's for |
 |---|---|
 | `GEMINI_API_KEY` | Stella's outfit suggestions. A free key from [Google AI Studio](https://aistudio.google.com) is enough. Without it, outfits are picked by the built-in rules. |
+| `DATABASE_URL` | Postgres connection, for example a free [Neon](https://neon.com) database. |
+| `DATABASE_URL_UNPOOLED` | The direct (unpooled) address of the same database, used to set up tables and for backups. |
 
 **Frontend** (`src/frontend/.env`, see `.env.example`):
 
