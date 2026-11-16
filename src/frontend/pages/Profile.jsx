@@ -198,6 +198,35 @@ export default function Profile() {
     }
   }
 
+  // Today's outfit on this device belongs to whoever was logged in
+  function forgetDevice() {
+    removeStorage(STORAGE.outfit);
+    removeStorage(STORAGE.outfitDay);
+  }
+
+  async function logOut() {
+    await fetch(`${API_URL}/api/auth/logout`, { method: "POST" });
+    forgetDevice();
+    navigate("/login");
+  }
+
+  async function deleteAccount() {
+    const sure = confirm(
+      "Delete your account, your wardrobe and your saved outfits for good? This can't be undone.",
+    );
+    if (!sure) return;
+
+    const res = await fetch(`${API_URL}/api/auth/account`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      setError("Could not delete the account.");
+      return;
+    }
+    forgetDevice();
+    navigate("/login");
+  }
+
   function notReady() {
     setMessage(SOON);
   }
@@ -365,12 +394,12 @@ export default function Profile() {
         </section>
       </div>
 
-      {/* Log out goes to the login page. Delete account waits for real accounts. */}
+      {/* Account actions */}
       <div className="mt-5 flex items-center justify-between">
         <Button
           variant="secondary"
           icon={LogOut}
-          onClick={() => navigate("/login")}
+          onClick={logOut}
           className="px-8"
         >
           Log out
@@ -386,7 +415,7 @@ export default function Profile() {
           </button>
           <button
             type="button"
-            onClick={notReady}
+            onClick={deleteAccount}
             className="inline-flex items-center gap-2 text-sm font-medium text-red-600"
           >
             <Trash2 size={16} /> Delete account

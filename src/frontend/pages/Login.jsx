@@ -5,8 +5,6 @@ import CookieBanner from "../components/CookieBanner";
 import { STORAGE, readStorage, removeStorage, writeStorage } from "../data";
 import { API_URL } from "../api";
 
-const PROFILE_API = `${API_URL}/api/profile`;
-
 const input =
   "w-full rounded-full border border-line bg-canvas/60 px-5 py-3 text-sm outline-none transition focus:-translate-y-0.5 focus:border-brand focus:bg-surface focus:shadow-soft";
 const mainButton =
@@ -45,26 +43,28 @@ export default function Login() {
       setError("Enter a valid email.");
       return;
     }
-    if (password.length < 6) {
-      setError("Password needs at least 6 characters.");
+    if (signUp && password.length < 8) {
+      setError("Password needs at least 8 characters.");
       return;
     }
 
-    // No accounts yet: sign up only puts the name and email on the profile
-    if (signUp) {
-      try {
-        const profile = await fetch(PROFILE_API).then((res) => res.json());
-        const res = await fetch(PROFILE_API, {
-          method: "PUT",
+    try {
+      const res = await fetch(
+        `${API_URL}/api/auth/${signUp ? "signup" : "login"}`,
+        {
+          method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...profile, name, email }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message);
-      } catch (err) {
-        setError(err.message || "Could not create your account.");
-        return;
-      }
+          body: JSON.stringify({ name, email, password, remember }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+    } catch (err) {
+      setError(err.message || "Something went wrong. Try again.");
+      return;
+    }
+
+    if (signUp) {
       // New here: ask about storage and location first, unless already asked
       if (readStorage(STORAGE.consent, null) === null) {
         setShowConsent(true);

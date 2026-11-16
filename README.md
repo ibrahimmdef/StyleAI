@@ -45,7 +45,7 @@ Tests: `cd src/frontend && npm test`
 
 | Name | What it's for |
 |---|---|
-| `VITE_API_URL` | Where the backend runs. Defaults to `http://localhost:5000`. |
+| `VITE_API_URL` | Leave it empty. The app calls `/api` on its own address: in development Vite passes those calls to the backend, on the live site Netlify does (`public/_redirects`). That keeps the login cookie on one site. |
 
 ## Editor setup
 

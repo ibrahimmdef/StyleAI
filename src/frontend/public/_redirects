@@ -1,2 +1,6 @@
-/*    /index.html   200
+# The live site passes /api and /uploads on to the backend, so the login cookie
+# stays on one site. Put the backend's address in place of BACKEND before going live:
+# /api/*      https://BACKEND/api/:splat      200
+# /uploads/*  https://BACKEND/uploads/:splat  200
 
+/*    /index.html   200

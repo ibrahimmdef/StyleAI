@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Route, Routes, Outlet, Link } from "react-router-dom";
+import { Route, Routes, Outlet, Link, Navigate } from "react-router-dom";
 import { ArrowLeft, Construction } from "lucide-react";
 import Sidebar, { MobileNavigation } from "./components/Sidebar";
 import Home from "./pages/Home";
@@ -36,15 +36,27 @@ export default function App() {
 }
 
 function AppLayout() {
-  // The sidebar and the pages both need the name, so it's loaded once here
+  // The sidebar and the pages both need the name, so it's loaded once here.
+  // It's also the login check: no profile means nobody is logged in.
   const [profile, setProfile] = useState(null);
+  const [loggedOut, setLoggedOut] = useState(false);
 
   useEffect(() => {
     fetch(`${API_URL}/api/profile`)
-      .then((res) => res.json())
-      .then((data) => setProfile(data))
-      .catch(() => setProfile(null));
+      .then((res) => {
+        if (res.status === 401) {
+          setLoggedOut(true);
+          return null;
+        }
+        return res.json();
+      })
+      .then((data) => data && setProfile(data))
+      .catch(() => setLoggedOut(true));
   }, []);
+
+  if (loggedOut) return <Navigate to="/login" replace />;
+  // Still checking: show nothing rather than a page that can't load yet
+  if (!profile) return null;
 
   return (
     <div className="min-h-screen bg-linear-to-br from-selected/70 via-canvas to-canvas 4xl:px-7 4xl:py-12">
