@@ -28,3 +28,16 @@ export function fitsSeason(item, season) {
 export function allowedColor(item, avoidColors = []) {
   return !avoidColors.includes(item.color);
 }
+
+// Does the piece match one of the user's styles? Pieces with no styles match any.
+export function fitsStyle(item, styles = []) {
+  if (!item.styles?.length || !styles.length) return true;
+  return item.styles.some((style) => styles.includes(style));
+}
+
+// Keeps the items that pass the check. If none pass, keeps them all,
+// because something is better than an empty slot.
+export function preferWhere(items, check) {
+  const good = items.filter(check);
+  return good.length ? good : items;
+}

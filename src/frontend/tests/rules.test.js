@@ -3,8 +3,10 @@ import assert from "node:assert/strict";
 import {
   allowedColor,
   fitsSeason,
+  fitsStyle,
   getSeason,
   needsLayer,
+  preferWhere,
 } from "../../shared/rules.js";
 
 test("months map to the right season", () => {
@@ -45,4 +47,24 @@ test("avoided colors are left out", () => {
   assert.equal(allowedColor(red, ["Brown"]), true);
   assert.equal(allowedColor(red, []), true);
   assert.equal(allowedColor(red), true);
+});
+
+test("pieces match the user's styles", () => {
+  const sporty = { styles: ["Sporty"] };
+  assert.equal(fitsStyle(sporty, ["Casual", "Sporty"]), true);
+  assert.equal(fitsStyle(sporty, ["Formal"]), false);
+  assert.equal(fitsStyle({ styles: [] }, ["Formal"]), true);
+  assert.equal(fitsStyle(sporty, []), true);
+});
+
+test("preferWhere falls back to everything when nothing passes", () => {
+  const items = [1, 2, 3, 4];
+  assert.deepEqual(
+    preferWhere(items, (n) => n > 2),
+    [3, 4],
+  );
+  assert.deepEqual(
+    preferWhere(items, (n) => n > 9),
+    [1, 2, 3, 4],
+  );
 });

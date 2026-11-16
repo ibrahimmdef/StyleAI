@@ -10,8 +10,10 @@ import WeatherCard, { loadWeather } from "../components/WeatherCard";
 import {
   allowedColor,
   fitsSeason,
+  fitsStyle,
   getSeason,
   needsLayer,
+  preferWhere,
 } from "../../shared/rules";
 import {
   OPTIONAL_SLOTS,
@@ -134,9 +136,12 @@ export default function Home() {
           (item) =>
             item.slot === slot && allowedColor(item, preferences?.avoidColors),
         );
-        const inSeason = all.filter((item) => fitsSeason(item, season));
-        // Nothing for this season? Better something than an empty slot
-        const options = inSeason.length ? inSeason : all;
+        // Season first, then the user's styles. Each one only narrows the
+        // list if something is left, so a slot never ends up empty because of it.
+        const inSeason = preferWhere(all, (item) => fitsSeason(item, season));
+        const options = preferWhere(inSeason, (item) =>
+          fitsStyle(item, preferences?.styles),
+        );
 
         let skip = OPTIONAL_SLOTS.includes(slot) && Math.random() < 0.4;
         // Cold: always add a layer. Warm: leave it out.
